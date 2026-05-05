@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>アニメnoteアンテナ | 考察・感想まとめ</title>
+  <meta name="description" content="アニメの考察・感想noteをスキ数順で自動収集。最新アニメの人気記事をチェック！" />
+  <style>
+    /* ── リセット & ベース ──────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --primary: #41c9b4;
+      --primary-dark: #2da899;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --badge-bg: #fef3c7;
+      --badge-text: #92400e;
+      --like-bg: #fee2e2;
+      --like-text: #991b1b;
+      --nav-h: 56px;
+      --sidebar-w: 260px;
+      --radius: 10px;
+    }
+    body {
+      font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── ヘッダー ───────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 16px;
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .logo {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary);
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .logo span { color: var(--text); }
+
+    /* ── ナビゲーションタブ ─────────────────────────────── */
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+    .nav-tab {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: none;
+      background: transparent;
+      font-size: .88rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      transition: background .15s, color .15s;
+    }
+    .nav-tab.active, .nav-tab:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* 作品別ドロップダウン（クリック切り替え方式） */
+    .dropdown { position: relative; }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      min-width: 240px;
+      max-height: 440px;
+      overflow-y: auto;
+      z-index: 200;
+    }
+    .dropdown-menu.open { display: block; }
+    .day-group { padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .day-group:last-child { border: none; }
+    .day-label {
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--muted);
+      padding: 4px 14px;
+      letter-spacing: .05em;
+    }
+    .anime-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 20px;
+      font-size: .85rem;
+      color: var(--text);
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .1s;
+      gap: 8px;
+    }
+    .anime-link:hover,
+    .anime-link.selected { background: #f0faf8; color: var(--primary-dark); }
+    .anime-link .ep-count { font-size: .68rem; color: var(--primary); font-weight: 700; flex-shrink: 0; }
+
+    /* 話数フィルターバー */
+    .episode-bar {
+      display: none;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 0 4px;
+      border-top: 1px solid var(--border);
+      margin-top: 10px;
+    }
+    .episode-bar.visible { display: flex; }
+    .ep-btn {
+      padding: 4px 11px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: .78rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      transition: background .12s, color .12s;
+    }
+    .ep-btn:hover { background: var(--bg); }
+    .ep-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* 検索ボックス */
+    .search-wrap {
+      margin-left: auto;
+    }
+    .search-box {
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: .85rem;
+      outline: none;
+      width: 180px;
+      transition: border-color .15s;
+    }
+    .search-box:focus { border-color: var(--primary); }
+
+    /* ── レイアウト ─────────────────────────────────────── */
+    .page-wrapper {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px 16px;
+      display: grid;
+      grid-template-columns: 1fr var(--sidebar-w);
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .page-wrapper { grid-template-columns: 1fr; }
+      .sidebar { order: -1; }
+    }
+
+    /* ── カードグリッド ─────────────────────────────────── */
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    @media (max-width: 600px) {
+      .card-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      transition: transform .15s, box-shadow .15s;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(0,0,0,.12);
+    }
+    .card-link { text-decoration: none; color: inherit; display: contents; }
+    .card-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      background: var(--border);
+    }
+    .card-thumb-placeholder {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: linear-gradient(135deg, #e0e7ef 0%, #c7d2e0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+    .card-body { padding: 10px 12px 12px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .card-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .badge {
+      font-size: .68rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .badge-day { background: var(--badge-bg); color: var(--badge-text); }
+    .badge-like { background: var(--like-bg); color: var(--like-text); }
+    .card-title {
+      font-size: .82rem;
+      font-weight: 600;
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-footer {
+      font-size: .72rem;
+      color: var(--muted);
+      margin-top: auto;
+    }
+    .card-anime {
+      font-size: .72rem;
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    /* ── サイドバー ─────────────────────────────────────── */
+    .sidebar { display: flex; flex-direction: column; gap: 20px; }
+    .sidebar-box {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    }
+    .sidebar-title {
+      font-size: .9rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary);
+    }
+    .rank-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .rank-item { display: flex; gap: 10px; align-items: flex-start; }
+    .rank-num {
+      font-size: .75rem;
+      font-weight: 800;
+      color: #fff;
+      background: var(--muted);
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .rank-num.top3 { background: #f59e0b; }
+    .rank-link {
+      font-size: .78rem;
+      line-height: 1.4;
+      color: var(--text);
+      text-decoration: none;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .rank-link:hover { color: var(--primary); }
+    .rank-like { font-size: .68rem; color: var(--like-text); font-weight: 600; }
+
+    /* ── ローディング / 空状態 ───────────────────────────── */
+    .loading-msg, .empty-msg {
+      text-align: center;
+      color: var(--muted);
+      padding: 60px 20px;
+      font-size: .9rem;
+    }
+
+    /* ── フッター ───────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 24px 16px;
+      font-size: .75rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+    }
+
+    /* ── ページネーション ────────────────────────────────── */
+    .pagination { display: flex; justify-content: center; gap: 6px; margin-top: 20px; flex-wrap: wrap; }
+    .page-btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .82rem;
+      transition: background .12s;
+    }
+    .page-btn:hover, .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .page-btn:disabled { opacity: .4; cursor: default; }
+  </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="#"><span>🎌</span> アニメ<span>note</span>アンテナ</a>
+
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="popular" onclick="switchTab('popular')">🔥 人気</button>
+      <button class="nav-tab" data-tab="latest" onclick="switchTab('latest')">🆕 最新</button>
+      <div class="dropdown" id="dropdownWrap">
+        <button class="nav-tab" data-tab="anime" id="animeTabBtn" onclick="toggleDropdown(event)">📺 作品別 ▾</button>
+        <div class="dropdown-menu" id="dropdownMenu"><!-- JSで生成 --></div>
+      </div>
+    </nav>
+
+    <div class="search-wrap">
+      <input class="search-box" type="search" placeholder="記事を検索…" oninput="filterBySearch(this.value)" />
+    </div>
+  </div>
+</header>
+
+<!-- メインコンテンツ -->
+<div class="page-wrapper">
+  <main>
+    <p class="section-title" id="sectionTitle">🔥 人気の記事</p>
+    <!-- 話数フィルターバー（作品選択時のみ表示） -->
+    <div class="episode-bar" id="episodeBar"></div>
+    <div class="card-grid" id="cardGrid">
+      <div class="loading-msg">データを読み込み中…</div>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </main>
+
+  <aside class="sidebar">
+    <div class="sidebar-box">
+      <p class="sidebar-title">👑 人気TOP10</p>
+      <ol class="rank-list" id="popularRank"></ol>
+    </div>
+    <div class="sidebar-box">
+      <p class="sidebar-title">🆕 最新TOP10</p>
+      <ol class="rank-list" id="latestRank"></ol>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  <p>© 2025 アニメnoteアンテナ &nbsp;|&nbsp; noteの記事をスキ数順で自動収集しています</p>
+  <p style="margin-top:4px">データ更新：毎日午前6時（JST）</p>
+</footer>
+
+<script>
+// ── データ管理 ─────────────────────────────────────────────────────────────
+let ALL_NOTES = [];
+let ANIME_LIST = [];
+let currentTab = "popular";
+let currentAnime = null;
+let currentEpisode = null;   // 話数フィルター
+let currentSearch = "";
+let currentPage = 1;
+const PAGE_SIZE = 24;
+
+// ── データ読み込み ──────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    // notes_data.json（scraper.pyが生成）を読み込み
+    const res = await fetch("notes_data.json?t=" + Date.now());
+    if (!res.ok) throw new Error("notes_data.json not found");
+    ALL_NOTES = await res.json();
+  } catch {
+    // ファイルがまだない場合はデモデータを表示
+    ALL_NOTES = generateDemoData();
+  }
+
+  try {
+    const res2 = await fetch("anime_list.json");
+    ANIME_LIST = await res2.json();
+  } catch {
+    ANIME_LIST = [];
+  }
+
+  buildDropdown();
+  buildEpisodeFilter();
+  renderSidebars();
+  render();
+}
+
+// ── デモデータ（初回／開発用） ──────────────────────────────────────────────
+function generateDemoData() {
+  const animes = [
+    { title:"黄泉のツガイ", day:"土曜日" },
+    { title:"Re:ゼロから始める異世界生活 4th season", day:"水曜日" },
+    { title:"名探偵コナン", day:"土曜日" },
+    { title:"転生したらスライムだった件 第4期", day:"金曜日" },
+    { title:"逃げ上手の若君", day:"金曜日" },
+    { title:"Dr.STONE SCIENCE FUTURE 第3クール", day:"木曜日" },
+  ];
+  const types = ["考察", "感想", "反応まとめ"];
+  const authors = ["アニメ評論家", "考察好きA", "週次まとめ係", "オタク社会人", "アニクラ"];
+  const notes = [];
+  animes.forEach((a, ai) => {
+    for (let i = 0; i < 12; i++) {
+      notes.push({
+        anime_title: a.title,
+        note_title: `【${a.title}】${types[i % 3]}記事 第${i+1}話`,
+        url: `https://note.com/example/n/sample_${ai}_${i}`,
+        thumbnail: null,
+        like_count: Math.floor(Math.random() * 300) + 10,
+        posted_at: new Date(Date.now() - (i * 86400000 * (ai+1))).toISOString(),
+        author: authors[i % authors.length],
+        day: a.day,
+      });
+    }
+  });
+  return notes;
+}
+
+// ── ドロップダウン開閉（クリック切り替え） ──────────────────────────────────
+function toggleDropdown(e) {
+  e.stopPropagation();
+  document.getElementById("dropdownMenu").classList.toggle("open");
+}
+document.addEventListener("click", () => {
+  document.getElementById("dropdownMenu")?.classList.remove("open");
+});
+
+// ── 作品別ドロップダウン生成 ─────────────────────────────────────────────────
+function buildDropdown() {
+  const menu = document.getElementById("dropdownMenu");
+  const days = ["日曜日","月曜日","火曜日","水曜日","木曜日","金曜日","土曜日"];
+
+  // dayMap: ANIME_LIST から作品名→曜日のマップ
+  const dayMap = {};
+  ANIME_LIST.forEach(a => { dayMap[a.title] = a.day; });
+
+  // ALL_NOTES に存在する作品だけを grouped に入れる（記事あり優先）
+  const noteTitles = [...new Set(ALL_NOTES.map(n => n.anime_title).filter(Boolean))];
+  const grouped = {};
+
+  noteTitles.forEach(title => {
+    const matchedNote = ALL_NOTES.find(n => n.anime_title === title);
+    const day = dayMap[title] || matchedNote?.day || "不明";
+    if (!grouped[day]) grouped[day] = [];
+    if (!grouped[day].some(a => a.title === title)) {
+      grouped[day].push({ title, day });
+    }
+  });
+
+  // ANIME_LIST の全作品も追加（記事0件でも曜日一覧に表示）
+  ANIME_LIST.forEach(a => {
+    if (!grouped[a.day]) grouped[a.day] = [];
+    if (!grouped[a.day].some(x => x.title === a.title)) {
+      grouped[a.day].push(a);
+    }
+  });
+
+  const allDays = [...days, ...Object.keys(grouped).filter(d => !days.includes(d))];
+  const html = allDays.filter(d => grouped[d]?.length).map(d => {
+    const items = grouped[d].map(a => {
+      const count = ALL_NOTES.filter(n => n.anime_title === a.title).length;
+      const badge = count > 0
+        ? `<span class="ep-count">(${count})</span>`
+        : `<span class="ep-count" style="opacity:.35">(0)</span>`;
+      const sel = currentAnime === a.title ? " selected" : "";
+      return `<span class="anime-link${sel}" data-anime="${escAttr(a.title)}">${escHtml(a.title)}${badge}</span>`;
+    }).join("");
+    return `<div class="day-group"><p class="day-label">${escHtml(d)}</p>${items}</div>`;
+  }).join("");
+
+  menu.innerHTML = html || "<p style='padding:12px;color:#888;font-size:.8rem'>作品データなし</p>";
+
+  menu.querySelectorAll(".anime-link[data-anime]").forEach(el => {
+    el.addEventListener("click", e => {
+      e.stopPropagation();
+      switchAnime(el.dataset.anime);
+      menu.classList.remove("open");
+    });
+  });
+}
+
+// ── サイドバーレンダリング ──────────────────────────────────────────────────
+function renderSidebars() {
+  // 人気TOP10
+  const popular = [...ALL_NOTES].sort((a,b) => b.like_count - a.like_count).slice(0,10);
+  document.getElementById("popularRank").innerHTML = popular.map((n,i) => rankItem(n,i)).join("");
+
+  // 最新TOP10
+  const latest = [...ALL_NOTES].sort((a,b) => new Date(b.posted_at) - new Date(a.posted_at)).slice(0,10);
+  document.getElementById("latestRank").innerHTML = latest.map((n,i) => rankItem(n,i)).join("");
+}
+
+function rankItem(note, idx) {
+  return `
+    <li class="rank-item">
+      <span class="rank-num ${idx < 3 ? 'top3' : ''}">${idx+1}</span>
+      <span>
+        <a class="rank-link" href="${note.url}" target="_blank" rel="noopener">${escHtml(note.note_title)}</a>
+        <span class="rank-like">♥ ${note.like_count.toLocaleString()}</span>
+      </span>
+    </li>`;
+}
+
+// ── 話数抽出ユーティリティ ──────────────────────────────────────────────────
+function extractEpisode(title) {
+  // 「1話」「第2話」「3話目」「4話感想」「話05」等に対応
+  const m = title.match(/(?:第\s*)?(\d{1,3})\s*話/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+// ── 話数フィルターバー生成 ────────────────────────────────────────────────────
+function buildEpisodeFilter() {
+  const bar = document.getElementById("episodeBar");
+  if (!currentAnime) { bar.classList.remove("visible"); return; }
+
+  const animeNotes = ALL_NOTES.filter(n => n.anime_title === currentAnime);
+  const epSet = new Set();
+  let hasOther = false;
+  animeNotes.forEach(n => {
+    const ep = extractEpisode(n.note_title);
+    if (ep !== null) epSet.add(ep);
+    else hasOther = true;
+  });
+
+  const eps = [...epSet].sort((a, b) => a - b);
+  if (eps.length === 0 && !hasOther) { bar.classList.remove("visible"); return; }
+
+  const makeBtn = (label, val) => {
+    const active = currentEpisode === val ? " active" : "";
+    return `<button class="ep-btn${active}" onclick="switchEpisode(${JSON.stringify(val)})">${label}</button>`;
+  };
+
+  let html = makeBtn("全話", null);
+  eps.forEach(ep => { html += makeBtn(`${ep}話`, ep); });
+  if (hasOther) html += makeBtn("その他", "other");
+
+  bar.innerHTML = html;
+  bar.classList.add("visible");
+}
+
+// ── フィルタリング & ソート ─────────────────────────────────────────────────
+function getFiltered() {
+  let notes = [...ALL_NOTES];
+
+  // 作品フィルタ
+  if (currentAnime) {
+    notes = notes.filter(n => n.anime_title === currentAnime);
+  }
+
+  // 話数フィルタ
+  if (currentEpisode !== null) {
+    if (currentEpisode === "other") {
+      notes = notes.filter(n => extractEpisode(n.note_title) === null);
+    } else {
+      notes = notes.filter(n => extractEpisode(n.note_title) === currentEpisode);
+    }
+  }
+
+  // 検索フィルタ
+  if (currentSearch.trim()) {
+    const q = currentSearch.toLowerCase();
+    notes = notes.filter(n =>
+      n.note_title.toLowerCase().includes(q) ||
+      n.anime_title.toLowerCase().includes(q) ||
+      (n.author || "").toLowerCase().includes(q)
+    );
+  }
+
+  // ソート
+  if (currentTab === "latest") {
+    notes.sort((a, b) => new Date(b.posted_at) - new Date(a.posted_at));
+  } else {
+    notes.sort((a, b) => b.like_count - a.like_count);
+  }
+
+  return notes;
+}
+
+// ── カードグリッドレンダリング ──────────────────────────────────────────────
+function render() {
+  const filtered = getFiltered();
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = 1;
+
+  const slice = filtered.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+
+  const grid = document.getElementById("cardGrid");
+  if (!slice.length) {
+    grid.innerHTML = `<div class="empty-msg">記事が見つかりませんでした</div>`;
+    document.getElementById("pagination").innerHTML = "";
+    return;
+  }
+
+  grid.innerHTML = slice.map(note => noteCard(note)).join("");
+  renderPagination(totalPages);
+
+  // セクションタイトル更新
+  const tabTitles = { popular: "🔥 人気の記事", latest: "🆕 最新の記事" };
+  let title = currentAnime
+    ? `📺 ${currentAnime}${currentEpisode !== null ? ` › ${currentEpisode === "other" ? "その他" : currentEpisode + "話"}` : ""}`
+    : (tabTitles[currentTab] || "");
+  if (currentSearch) title += ` 「${currentSearch}」`;
+  title += ` (${total}件)`;
+  document.getElementById("sectionTitle").textContent = title;
+}
+
+function noteCard(note) {
+  const dayMap = {};
+  (ANIME_LIST || []).forEach(a => { dayMap[a.title] = a.day; });
+  const day = note.day || dayMap[note.anime_title] || "";
+  const dayShort = day.replace("曜日","");
+  const dateStr = note.posted_at ? new Date(note.posted_at).toLocaleDateString("ja-JP", {month:"numeric",day:"numeric"}) : "";
+  const thumb = note.thumbnail
+    ? `<img class="card-thumb" src="${escHtml(note.thumbnail)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+    : "";
+  const placeholder = `<div class="card-thumb-placeholder" ${note.thumbnail ? 'style="display:none"' : ""}>📖</div>`;
+
+  return `
+    <div class="card">
+      <a class="card-link" href="${escHtml(note.url)}" target="_blank" rel="noopener noreferrer">
+        ${thumb}${placeholder}
+        <div class="card-body">
+          <div class="card-meta">
+            ${day ? `<span class="badge badge-day">${dayShort}</span>` : ""}
+            <span class="badge badge-like">♥ ${note.like_count.toLocaleString()}</span>
+          </div>
+          <p class="card-anime">${escHtml(note.anime_title)}</p>
+          <p class="card-title">${escHtml(note.note_title)}</p>
+          <p class="card-footer">${escHtml(note.author || "")}${dateStr ? " · " + dateStr : ""}</p>
+        </div>
+      </a>
+    </div>`;
+}
+
+// ── ページネーション ────────────────────────────────────────────────────────
+function renderPagination(totalPages) {
+  const pg = document.getElementById("pagination");
+  if (totalPages <= 1) { pg.innerHTML = ""; return; }
+
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹ 前へ</button>`;
+  const range = pageRange(currentPage, totalPages);
+  range.forEach(p => {
+    if (p === "…") {
+      html += `<span class="page-btn" style="cursor:default">…</span>`;
+    } else {
+      html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    }
+  });
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>次へ ›</button>`;
+  pg.innerHTML = html;
+}
+
+function pageRange(cur, total) {
+  if (total <= 7) return Array.from({length:total},(_,i)=>i+1);
+  const pages = new Set([1, 2, cur-1, cur, cur+1, total-1, total].filter(p=>p>=1&&p<=total));
+  const sorted = [...pages].sort((a,b)=>a-b);
+  const result = [];
+  sorted.forEach((p,i) => {
+    if (i > 0 && p - sorted[i-1] > 1) result.push("…");
+    result.push(p);
+  });
+  return result;
+}
+
+function goPage(p) {
+  currentPage = p;
+  render();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+// ── タブ切り替え ────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  currentAnime = null;
+  currentEpisode = null;
+  currentPage = 1;
+  document.querySelectorAll(".nav-tab").forEach(el => el.classList.remove("active"));
+  const btn = document.querySelector(`[data-tab="${tab}"]`);
+  if (btn) btn.classList.add("active");
+  document.getElementById("episodeBar").classList.remove("visible");
+  buildDropdown();
+  render();
+}
+
+function switchAnime(title) {
+  currentAnime = title;
+  currentEpisode = null;
+  currentTab = "anime";
+  currentPage = 1;
+  document.querySelectorAll(".nav-tab").forEach(el => el.classList.remove("active"));
+  document.getElementById("animeTabBtn").classList.add("active");
+  buildDropdown();        // selected スタイル更新
+  buildEpisodeFilter();   // 話数バー構築
+  render();
+}
+
+function switchEpisode(val) {
+  currentEpisode = val;
+  currentPage = 1;
+  buildEpisodeFilter();   // active ボタン更新
+  render();
+}
+
+function filterBySearch(val) {
+  currentSearch = val;
+  currentAnime = null;
+  currentEpisode = null;
+  currentPage = 1;
+  render();
+}
+
+// ── ユーティリティ ──────────────────────────────────────────────────────────
+function escHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
+}
+
+// data-* 属性に安全に埋め込む（ダブルクォートをエスケープ）
+function escAttr(str) {
+  if (!str) return "";
+  return String(str).replace(/&/g,"&amp;").replace(/"/g,"&quot;");
+}
+
+// ── 起動 ───────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
