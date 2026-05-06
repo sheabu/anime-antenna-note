@@ -1,83 +1,74 @@
 let allNotes = [];
 
-// 1. データの読み込み
-async function loadNotes() {
+async function init() {
     try {
         const response = await fetch('notes_data.json');
         allNotes = await response.json();
         
-        // 作品名プルダウンを自動生成
-        populateWorkFilter();
-        // 初期表示
-        renderNotes(allNotes);
-    } catch (err) {
-        console.error("データの読み込みに失敗しました", err);
+        // 作品プルダウンの生成
+        const filter = document.getElementById('work-filter');
+        const works = [...new Set(allNotes.map(n => n.work))].filter(Boolean);
+        works.sort().forEach(work => {
+            const opt = document.createElement('option');
+            opt.value = work;
+            opt.textContent = work;
+            filter.appendChild(opt);
+        });
+
+        updateList(); // 初期表示
+    } catch (e) {
+        console.error("データの読み込みエラー", e);
     }
 }
 
-// 2. 作品プルダウンの動的生成
-function populateWorkFilter() {
-    const filter = document.getElementById('work-filter');
-    const works = [...new Set(allNotes.map(n => n.work))].filter(Boolean);
-    
-    works.forEach(work => {
-        const option = document.createElement('option');
-        option.value = work;
-        option.textContent = work;
-        filter.appendChild(option);
-    });
-}
-
-// 3. 描画機能（リンクも正常化）
-function renderNotes(notes) {
-    const list = document.getElementById('note-list');
-    const count = document.getElementById('article-count');
-    list.innerHTML = '';
-    count.textContent = `${notes.length} 件の記事が見つかりました`;
-
-    notes.forEach(note => {
-        const card = document.createElement('a');
-        card.className = 'note-card';
-        card.href = note.url;
-        card.target = '_blank';
-        card.innerHTML = `
-            <img src="${note.image || 'default.png'}" alt="thumb">
-            <div class="note-info">
-                <h3>${note.title}</h3>
-                <div class="meta">
-                    <span class="work-tag">${note.work}</span>
-                    <span class="likes">❤️ ${note.likes}</span>
-                </div>
-            </div>
-        `;
-        list.appendChild(card);
-    });
-}
-
-// 4. フィルタリングとソート（ここが死んでいました）
 function updateList() {
     const work = document.getElementById('work-filter').value;
     const sort = document.getElementById('sort-order').value;
     const search = document.getElementById('search-input').value.toLowerCase();
 
+    // フィルタリング
     let filtered = allNotes.filter(n => {
         const matchWork = (work === 'all' || n.work === work);
         const matchSearch = n.title.toLowerCase().includes(search);
         return matchWork && matchSearch;
     });
 
+    // ソート（スキ数と日付）
     if (sort === 'new') {
         filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
     } else {
-        filtered.sort((a, b) => b.likes - a.likes);
+        filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
     }
 
-    renderNotes(filtered);
+    render(filtered);
 }
 
-// イベント登録
+function render(data) {
+    const list = document.getElementById('note-list');
+    const count = document.getElementById('result-count');
+    list.innerHTML = '';
+    count.textContent = `${data.length} articles found`;
+
+    data.forEach(item => {
+        const card = document.createElement('a');
+        card.className = 'note-card';
+        card.href = item.url;
+        card.target = '_blank'; // 新しいタブで開く
+        card.innerHTML = `
+            <img src="${item.image || 'no-image.png'}" alt="thumb">
+            <div class="note-info">
+                <div style="font-size:12px; color:#ff4e00; font-weight:bold;">${item.work}</div>
+                <h3 style="margin:5px 0; font-size:16px;">${item.title}</h3>
+                <div style="font-size:13px; color:#666;">❤️ ${item.likes || 0} likes</div>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+// イベントリスナーの登録
 document.getElementById('work-filter').addEventListener('change', updateList);
 document.getElementById('sort-order').addEventListener('change', updateList);
 document.getElementById('search-input').addEventListener('input', updateList);
 
-loadNotes();
+init();
