@@ -2,21 +2,12 @@ import json
 import os
 import time
 import random
-import re
 from playwright.sync_api import sync_playwright
+
+from article_filters import load_filter_config, title_matches_anime
 
 DATA_FILE = 'notes_data.json'
 ANIME_LIST_FILE = 'anime_list.json'
-
-def is_relevant_title(title, anime_title):
-    t = re.sub(r"[\s　・!！?？:：()（）「」『』【】\-\u3000]", "", str(title or "")).lower()
-    a = re.sub(r"[\s　・!！?？:：()（）「」『』【】\-\u3000]", "", str(anime_title or "")).lower()
-    if not t or t == "notearticle":
-        return False
-    if a and a in t:
-        return True
-    anchors = [w for w in re.split(r"[ 　/・]", anime_title) if len(w) >= 2]
-    return any(re.sub(r"[\s　]", "", w).lower() in t for w in anchors)
 
 
 def main():
@@ -40,6 +31,8 @@ def main():
 
     with open(ANIME_LIST_FILE, 'r', encoding='utf-8') as f:
         anime_list = json.load(f)
+
+    filter_cfg = load_filter_config()
 
     # 制限を解除し、リストにある全作品を対象にします
     test_list = anime_list 
@@ -68,7 +61,9 @@ def main():
                     if not raw_url: continue
                     full_url = raw_url if raw_url.startswith('http') else f"https://note.com{raw_url.split('?')[0]}"
                     link_text = (link.inner_text() or "").strip()
-                    if full_url not in existing_urls and is_relevant_title(link_text, anime['title']):
+                    if full_url not in existing_urls and title_matches_anime(
+                        link_text, anime['title'], filter_cfg
+                    ):
                         all_notes.append({
                             "title": "note article",
                             "note_title": link_text,

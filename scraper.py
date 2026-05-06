@@ -5,6 +5,8 @@ import time
 import random
 from urllib.parse import quote
 
+from article_filters import load_filter_config, title_matches_anime
+
 DATA_FILE = 'notes_data.json'
 ANIME_LIST_FILE = 'anime_list.json'
 
@@ -25,6 +27,8 @@ def main():
     
     with open(ANIME_LIST_FILE, 'r', encoding='utf-8') as f:
         anime_list = json.load(f)
+
+    filter_cfg = load_filter_config()
 
     session = requests.Session()
     # ブラウザが送る「本物の情報」をより正確に再現
@@ -68,9 +72,15 @@ def main():
                 
                 for note in items:
                     if count_per_anime >= 50: break
-                    url = f"https://note.com/{note['user']['urlname']}/n/{note['key']}"
-                    if url not in existing_urls:
-                        all_notes.append({"title": note['name'], "url": url, "anime_title": anime['title']})
+                    user = note.get('user') or {}
+                    urlname = user.get('urlname')
+                    key = note.get('key')
+                    if not urlname or not key:
+                        continue
+                    note_name = (note.get('name') or '').strip()
+                    url = f"https://note.com/{urlname}/n/{key}"
+                    if url not in existing_urls and title_matches_anime(note_name, anime['title'], filter_cfg):
+                        all_notes.append({"title": note_name, "url": url, "anime_title": anime['title']})
                         existing_urls.add(url)
                         count_per_anime += 1
                 

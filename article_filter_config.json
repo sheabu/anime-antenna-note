@@ -1,0 +1,34 @@
+{
+  "defaults": {
+    "min_anchor_length": 3,
+    "ignore_anchors_normalized": ["note", "no", "tv", "movie", "the", "anime"]
+  },
+  "global_exclude_keywords": [
+    "転職",
+    "採用",
+    "求人",
+    "副業投資",
+    "株で",
+    "メンバーシップのみ",
+    "入会者のみ"
+  ],
+  "works": {
+    "DEATH NOTE": {
+      "required_normalized_substrings": ["deathnote", "デスノート"],
+      "exclude_keywords": [
+        "メンバーシップ",
+        "noteオリジナル",
+        "オリジナルアイコン",
+        "設定者のフォロー",
+        "フォローをお待ち",
+        "加入者数",
+        "note設定",
+        "noteメンバー",
+        "noteプラス",
+        "プレミアムnote",
+        "noteとは",
+        "noteの機能"
+      ]
+    }
+  }
+}

@@ -1,12 +1,14 @@
 import json
 import re
 
+from article_filters import load_filter_config, title_matches_anime
+
 
 def normalize_text(text):
     return re.sub(r"[\s　・!！?？:：()（）「」『』【】\-\u3000]", "", str(text or "")).lower()
 
 
-def is_relevant(note, anime_titles):
+def is_relevant(note, anime_titles, filter_cfg=None):
     anime_title = str(note.get("anime_title") or "").strip()
     note_title = str(note.get("note_title") or note.get("title") or "").strip()
     url = str(note.get("url") or "").strip()
@@ -20,15 +22,7 @@ def is_relevant(note, anime_titles):
     if "403" in note_title:
         return False
 
-    # 作品名が記事タイトルに含まれているものを優先して残す
-    nt = normalize_text(note_title)
-    at = normalize_text(anime_title)
-    if at and at in nt:
-        return True
-
-    # 代表キーワード一致（続編表記や短縮名のゆれを救済）
-    anchors = [w for w in re.split(r"[ 　/・]", anime_title) if len(w) >= 2]
-    return any(normalize_text(a) in nt for a in anchors)
+    return title_matches_anime(note_title, anime_title, filter_cfg)
 
 
 def clean_notes():
@@ -40,7 +34,9 @@ def clean_notes():
     anime_titles = {str(a.get("title") or "").strip() for a in anime_list}
     anime_titles.discard("")
 
-    cleaned_notes = [n for n in notes if is_relevant(n, anime_titles)]
+    filter_cfg = load_filter_config()
+
+    cleaned_notes = [n for n in notes if is_relevant(n, anime_titles, filter_cfg)]
 
     # URL重複を除去
     deduped = []
