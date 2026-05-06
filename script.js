@@ -20,7 +20,7 @@ function displayNotes() {
         const isBlacklisted = tags.includes("うそ探偵トマント") || title.includes("YOSOHACHI") || title.includes("電車");
         
         // 2. アニメに関係するタグが1つでもあるか（タグ基準の抽出）
-        const animeKeywords = ["アニメ", "感想", "考察", "マンガ", "レビュー"];
+        const animeKeywords = ["アニメ", "感想", "考察", "マンガ", "レビュー", "推しの子", "進撃", "呪術", "鬼滅", "スパイファミリー"];
         const hasAnimeTag = tags.some(tag => animeKeywords.some(key => tag.includes(key)));
 
         return !isBlacklisted && (hasAnimeTag || title.includes("アニメ"));
