@@ -72,3 +72,16 @@ document.getElementById('anime-filter').addEventListener('change', displayNotes)
 document.getElementById('sort-order').addEventListener('change', displayNotes);
 
 window.onload = loadNotes;
+
+// ティッカーの中身を更新する関数
+function updateTicker() {
+    const ticker = document.getElementById('news-ticker');
+    if (!allNotes.length) return;
+    
+    // 最新の10件をピックアップ
+    const latest = allNotes.slice(0, 10);
+    ticker.innerHTML = latest.map(n => `<span>🔥 新着記事: ${n.note_title || '取得中...'}</span>`).join('');
+}
+
+// loadNotesの最後で実行するように調整
+// (既存のloadNotes関数の最後に updateTicker(); を手動で入れるか、script.js全体を再構成)
