@@ -3,7 +3,7 @@ const RANKING_REFRESH_MS = 5 * 60 * 1000;
 
 function normalizeNote(note) {
     const safeUrl = typeof note.url === 'string' && /^https?:\/\//.test(note.url) ? note.url : '#';
-    const displayTitle = note.title ?? note.note_title ?? '（無題）';
+    const displayTitle = note.note_title ?? note.title ?? '（無題）';
     const displayWork = note.work ?? note.anime_title ?? '未分類';
     const baseLikes = Number(note.likes ?? note.like_count ?? 0) || 0;
 
