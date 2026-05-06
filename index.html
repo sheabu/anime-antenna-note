@@ -9,31 +9,43 @@
 </head>
 <body>
     <header>
-        <h1>あにnoteアンテナ</h1>
+        <div class="header-container">
+            <img src="logo.png" alt="あにnoteアンテナ" class="logo">
+            <input type="text" id="search-input" placeholder="記事を検索...">
+        </div>
     </header>
 
     <div class="container">
-        <main id="main-content">
-            <nav class="sort-tabs">
-                <button class="tab-btn active" onclick="sortNotes('new')">最新</button>
-                <button class="tab-btn" onclick="sortNotes('popular')">人気</button>
-                <button class="tab-btn" onclick="sortNotes('work')">作品別</button>
-            </nav>
-            
+        <main>
+            <h2 id="list-title">新着・人気記事</h2>
             <div id="note-list">
                 </div>
         </main>
 
         <aside class="sidebar">
             <div class="sidebar-panel">
-                <div class="panel-header">📢 公式X最新情報</div>
-                <div class="x-embed-container">
-                    <a class="twitter-timeline" data-height="600" data-theme="light" href="https://twitter.com/anime_antenna_?ref_src=twsrc%5Etfw">Tweets by anime</a> 
+                <h3>作品から探す</h3>
+                <select id="work-filter">
+                    <option value="all">すべての作品</option>
+                </select>
+            </div>
+
+            <div class="sidebar-panel">
+                <h3>並び替え</h3>
+                <select id="sort-order">
+                    <option value="new">新着順</option>
+                    <option value="popular">人気順（スキ数）</option>
+                </select>
+            </div>
+
+            <div class="sidebar-panel x-panel">
+                <h3>📢 公式X最新情報</h3>
+                <div class="x-timeline-container">
+                    <a class="twitter-timeline" data-height="500" href="https://twitter.com/anime_antenna_?ref_src=twsrc%5Etfw">Tweets by anime</a>
                 </div>
             </div>
         </aside>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
