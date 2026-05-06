@@ -139,3 +139,35 @@ body {
     0% { transform: translateX(0); }
     100% { transform: translateX(-100%); }
 }
+
+/* 公式リンクの自動スクロール窓 */
+.official-ticker-container {
+    height: 150px;
+    overflow: hidden;
+    position: relative;
+    background: #fdfdfd;
+}
+
+.official-ticker-content {
+    position: absolute;
+    width: 100%;
+    animation: vertical-ticker 15s linear infinite;
+}
+
+.official-ticker-content a {
+    display: block;
+    padding: 10px;
+    color: #3d5afe;
+    text-decoration: none;
+    border-bottom: 1px dashed #eee;
+    font-size: 0.9rem;
+}
+
+.official-ticker-content a:hover {
+    background: #eef0ff;
+}
+
+@keyframes vertical-ticker {
+    0% { top: 0; }
+    100% { top: -100%; }
+}
