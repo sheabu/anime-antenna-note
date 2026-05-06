@@ -16,5 +16,5 @@ select { width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px; border
 /* 広告演出：スクロールバーを消し、情報の流れを感じさせる */
 .x-ad-space { padding: 0; overflow: hidden; border: 1px solid #eee; }
 .x-ad-header { background: #ff4e00; color: white; padding: 8px; font-weight: bold; text-align: center; font-size: 12px; }
-.x-ad-window { height: 500px; overflow-y: auto; scroll-behavior: smooth; }
+.x-ad-window { min-height: 560px; overflow: hidden; }
 .x-ad-window::-webkit-scrollbar { width: 0; }
