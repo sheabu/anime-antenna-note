@@ -1,11 +1,23 @@
 let notesData = [];
 
+function normalizeNote(note) {
+    return {
+        work: note.work ?? note.anime_title ?? '',
+        title: note.title ?? note.note_title ?? '',
+        likes: note.likes ?? note.like_count ?? 0,
+        date: note.date ?? note.posted_at ?? note.updated_at ?? '',
+        image: note.image ?? note.thumbnail ?? '',
+        url: note.url ?? '#'
+    };
+}
+
 async function startApp() {
     try {
         // キャッシュを破壊して強制的に最新のJSONを読み込む
         const res = await fetch('./notes_data.json?v=' + Date.now());
         if (!res.ok) throw new Error('File not found');
-        notesData = await res.json();
+        const rawNotes = await res.json();
+        notesData = rawNotes.map(normalizeNote);
         
         // フィルターのプルダウンを生成
         const filter = document.getElementById('work-filter');
@@ -37,7 +49,8 @@ function render() {
     const search = document.getElementById('search-input').value.toLowerCase();
 
     let filtered = notesData.filter(n => 
-        (work === 'all' || n.work === work) && n.title.toLowerCase().includes(search)
+        (work === 'all' || n.work === work) &&
+        (n.title || '').toLowerCase().includes(search)
     );
 
     filtered.sort((a, b) => sort === 'new' ? 
