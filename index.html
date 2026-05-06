@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>あにnoteアンテナ | アニメ感想まとめ</title>
+    <title>あにnoteアンテナ</title>
     <link rel="stylesheet" href="style.css">
     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </head>
@@ -11,47 +11,35 @@
     <header>
         <div class="header-inner">
             <h1 class="logo">あにnoteアンテナ</h1>
-            <input type="text" id="search-input" placeholder="作品名やキーワードで検索...">
+            <input type="text" id="search-input" placeholder="作品やキーワードで検索...">
         </div>
     </header>
 
     <div class="container">
         <main>
             <div class="main-header">
-                <h2>新着・人気記事</h2>
-                <span id="result-count">0 articles</span>
+                <h2>記事一覧</h2>
+                <span id="result-count">読み込み中...</span>
             </div>
-            <div id="note-list">
-                </div>
+            <div id="note-list"></div>
         </main>
 
         <aside class="sidebar">
-            <div class="sidebar-panel work-panel">
-                <h3>🔍 作品から探す</h3>
-                <select id="work-filter">
-                    <option value="all">すべての作品</option>
-                </select>
+            <div class="sidebar-panel">
+                <h3>🔍 作品別</h3>
+                <select id="work-filter"><option value="all">すべての作品</option></select>
             </div>
-
-            <div class="sidebar-panel sort-panel">
+            <div class="sidebar-panel">
                 <h3>🔃 並び替え</h3>
                 <select id="sort-order">
                     <option value="new">新着順</option>
-                    <option value="popular">人気順（スキ数）</option>
+                    <option value="popular">人気順</option>
                 </select>
             </div>
-
             <div class="sidebar-panel x-panel">
-                <h3>📢 公式X 最新情報</h3>
-                <div class="x-window">
-                    <div class="x-scroller">
-                        <a class="twitter-timeline" 
-                           data-chrome="noheader nofooter noborders transparent" 
-                           data-height="1000" 
-                           href="https://twitter.com/anime_antenna_">
-                           Loading...
-                        </a>
-                    </div>
+                <div class="x-header">OFFICIAL X NEWS</div>
+                <div class="x-container">
+                    <a class="twitter-timeline" data-chrome="noheader nofooter noborders transparent" data-height="1500" href="https://twitter.com/anime_antenna_"></a>
                 </div>
             </div>
         </aside>
