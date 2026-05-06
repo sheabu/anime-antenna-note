@@ -1,4 +1,5 @@
 let notesData = [];
+const RANKING_REFRESH_MS = 5 * 60 * 1000;
 
 function normalizeNote(note) {
     const safeUrl = typeof note.url === 'string' && /^https?:\/\//.test(note.url) ? note.url : '#';
@@ -39,12 +40,74 @@ async function startApp() {
         document.getElementById('search-input').oninput = render;
 
         render();
+        initializeXWidgets();
+        loadHashtagRanking();
+        setInterval(loadHashtagRanking, RANKING_REFRESH_MS);
     } catch (e) {
         document.getElementById('note-list').innerHTML = `
             <div style="background:white; padding:20px; border-radius:12px; border:1px solid #ff4e00;">
                 <h3>⚠️ 起動エラー</h3>
                 <p>ブラウザで <b>Cmd + Shift + R</b> を押して再読み込みしてください。</p>
             </div>`;
+    }
+}
+
+function initializeXWidgets() {
+    const tryLoad = () => {
+        if (window.twttr && window.twttr.widgets && window.twttr.widgets.load) {
+            window.twttr.widgets.load();
+        }
+    };
+
+    tryLoad();
+    window.setTimeout(tryLoad, 1200);
+    window.setTimeout(showXFallbackIfNeeded, 3500);
+}
+
+function showXFallbackIfNeeded() {
+    const fallback = document.getElementById('x-widget-fallback');
+    const widgetWindow = document.querySelector('.x-ad-window');
+    if (!fallback || !widgetWindow) return;
+    const hasIframe = widgetWindow.querySelector('iframe');
+    if (!hasIframe) fallback.classList.remove('hidden');
+}
+
+async function loadHashtagRanking() {
+    const listEl = document.getElementById('x-rank-list');
+    const trackEl = document.getElementById('x-rank-track');
+    if (!listEl || !trackEl) return;
+
+    try {
+        const res = await fetch(`./x_ranking.json?v=${Date.now()}`);
+        if (!res.ok) throw new Error('ranking not found');
+        const payload = await res.json();
+        const rankings = Array.isArray(payload.rankings) ? payload.rankings.slice(0, 8) : [];
+
+        if (!rankings.length) throw new Error('ranking empty');
+        listEl.innerHTML = rankings.map((item, i) => `
+            <li>
+                <a class="rank-tag" href="https://twitter.com/hashtag/${encodeURIComponent((item.tag || '').replace('#', ''))}?f=live" target="_blank" rel="noopener noreferrer">
+                    ${i + 1}. ${item.tag}
+                </a>
+                <span class="rank-score">${item.score}</span>
+            </li>
+        `).join('') + `<div class="x-rank-meta">更新: ${payload.updated_at || 'unknown'}</div>`;
+
+        trackEl.innerHTML = rankings.map((item, i) => `
+            <a href="https://twitter.com/hashtag/${encodeURIComponent((item.tag || '').replace('#', ''))}?f=live" target="_blank" rel="noopener noreferrer">
+                ${i + 1}位 ${item.tag}
+            </a>
+        `).join('');
+    } catch (_) {
+        listEl.innerHTML = `
+            <li>
+                <a class="rank-tag" href="https://twitter.com/hashtag/%E3%82%A2%E3%83%8B%E3%83%A1?f=live" target="_blank" rel="noopener noreferrer">
+                    1. #アニメ
+                </a>
+                <span class="rank-score">LIVE</span>
+            </li>
+        `;
+        trackEl.innerHTML = '<a href="https://twitter.com/hashtag/%E3%82%A2%E3%83%8B%E3%83%A1?f=live" target="_blank" rel="noopener noreferrer">#アニメ ライブ投稿</a>';
     }
 }
 
