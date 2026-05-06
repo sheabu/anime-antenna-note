@@ -10,10 +10,7 @@ python3 detail_scraper.py
 echo "2/5 XランキングJSONを更新します..."
 python3 generate_x_ranking.py
 
-echo "3/5 最新を取り込んで rebase します..."
-git pull --rebase origin main
-
-echo "4/5 変更をコミットします..."
+echo "3/5 変更をコミットします（その後 pull / push）..."
 git add notes_data.json x_ranking.json
 if git diff --cached --quiet; then
   echo "変更がないためコミットをスキップしました。"
@@ -24,6 +21,9 @@ Auto-update: refresh likes and X hashtag ranking
 EOF
 )"
 fi
+
+echo "4/5 最新を取り込んで rebase します..."
+git pull --rebase origin main
 
 echo "5/5 GitHub へ push します..."
 git push origin main
