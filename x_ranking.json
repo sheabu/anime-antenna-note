@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-07 06:56:47",
+  "updated_at": "2026-05-07 07:00:17",
   "source": "notes_data.json",
   "rankings": [
     {
@@ -47,10 +47,6 @@
       "score": 2776
     },
     {
-      "tag": "#ONEPIECE",
-      "score": 2673
-    },
-    {
       "tag": "#機動戦士ガンダム",
       "score": 2612
     },
@@ -63,12 +59,12 @@
       "score": 2182
     },
     {
-      "tag": "#鬼滅の刃",
-      "score": 2164
+      "tag": "#ONEPIECE",
+      "score": 2168
     },
     {
-      "tag": "#BANANAFISH",
-      "score": 2049
+      "tag": "#鬼滅の刃",
+      "score": 2164
     },
     {
       "tag": "#呪術廻戦",
@@ -81,6 +77,10 @@
     {
       "tag": "#リラックマ",
       "score": 1807
+    },
+    {
+      "tag": "#うる星やつら",
+      "score": 1730
     }
   ]
 }
