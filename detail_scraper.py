@@ -1,5 +1,6 @@
 import json
 import random
+import re
 import time
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
@@ -8,6 +9,12 @@ import requests
 from bs4 import BeautifulSoup
 
 DEFAULT_THUMBNAIL = 'https://via.placeholder.com/140x80?text=Anime'
+
+HTML_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8',
+}
 
 
 def save_notes(notes):
@@ -29,36 +36,102 @@ def extract_note_key(url):
 
 def normalize_image_url(image_url, base_url):
     image_url = (image_url or '').strip()
-    if not image_url:
+    if not image_url or image_url.startswith('data:'):
         return ''
-    return urljoin(base_url, image_url)
+    if image_url.startswith('//'):
+        return 'https:' + image_url
+    if not re.match(r'^https?://', image_url, re.I):
+        return urljoin(base_url, image_url)
+    return image_url
+
+
+def _pick_largest_from_srcset(srcset):
+    if not srcset:
+        return ''
+    best_url, best_w = '', -1
+    for part in srcset.split(','):
+        part = part.strip()
+        if not part:
+            continue
+        bits = part.split()
+        url = bits[0]
+        w = 0
+        if len(bits) > 1 and bits[1].endswith('w'):
+            try:
+                w = int(bits[1][:-1])
+            except ValueError:
+                w = 0
+        if w >= best_w:
+            best_w = w
+            best_url = url
+    return best_url
+
+
+def _is_junk_image_url(url):
+    u = (url or '').lower()
+    if not u:
+        return True
+    if 'spacer' in u or 'pixel.gif' in u or '1x1' in u:
+        return True
+    return False
+
+
+def thumbnail_needs_refresh(note):
+    t = str(note.get('thumbnail') or '').strip()
+    if not t:
+        return True
+    if t.startswith('//'):
+        return True
+    if not re.match(r'^https?://', t, re.I):
+        return True
+    if 'via.placeholder.com' in t.lower():
+        return True
+    return False
 
 
 def scrape_thumbnail_from_html(session, note_url):
     try:
-        resp = session.get(note_url, timeout=20, headers={'User-Agent': 'Mozilla/5.0', 'Referer': note_url})
+        resp = session.get(note_url, timeout=25, headers={**HTML_HEADERS, 'Referer': 'https://note.com/'})
         if resp.status_code != 200:
             return ''
-        soup = BeautifulSoup(resp.text, 'html.parser')
+        soup = BeautifulSoup(resp.text, 'lxml')
 
-        # 1) og:image を最優先
+        # 1) og:image
         og = soup.find('meta', attrs={'property': 'og:image'}) or soup.find('meta', attrs={'name': 'og:image'})
         if og and og.get('content'):
-            return normalize_image_url(og.get('content'), note_url)
+            u = normalize_image_url(og.get('content'), note_url)
+            if u and not _is_junk_image_url(u):
+                return u
 
-        # 2) 本文の1枚目画像（遅延読み込み属性を考慮）
-        candidates = soup.select('article img, main img, .note-body img, .o-noteContentText img, img')
+        # 1b) twitter:image
+        tw = soup.find('meta', attrs={'name': 'twitter:image'}) or soup.find('meta', attrs={'property': 'twitter:image'})
+        if tw and tw.get('content'):
+            u = normalize_image_url(tw.get('content'), note_url)
+            if u and not _is_junk_image_url(u):
+                return u
+
+        # 2) 本文の画像（遅延読み込み・srcset）
+        candidates = soup.select(
+            'article img, [class*="noteContent"] img, [class*="note-body"] img, main img, img'
+        )
         for img in candidates:
+            classes = ' '.join(img.get('class') or []).lower()
+            if 'avatar' in classes or 'icon' in classes or 'emoji' in classes:
+                continue
+
             src = (
                 img.get('data-src')
                 or img.get('data-original')
                 or img.get('data-lazy-src')
-                or img.get('src')
+                or img.get('data-srcset') and _pick_largest_from_srcset(img.get('data-srcset'))
             )
             if not src and img.get('srcset'):
-                src = img.get('srcset').split(',')[0].strip().split(' ')[0]
+                src = _pick_largest_from_srcset(img.get('srcset'))
+            if not src:
+                src = img.get('src')
+
             normalized = normalize_image_url(src, note_url)
-            if normalized:
+            if normalized and not _is_junk_image_url(normalized) and not normalized.startswith('data:'):
                 return normalized
     except Exception:
         return ''
@@ -89,14 +162,16 @@ def fetch_note_detail(session, note_url):
                 thumbnail = eyecatch
 
             thumbnail = normalize_image_url(thumbnail, note_url)
-            if not thumbnail:
+            if not thumbnail or _is_junk_image_url(thumbnail):
                 thumbnail = scrape_thumbnail_from_html(session, note_url)
+            if not thumbnail:
+                thumbnail = DEFAULT_THUMBNAIL
 
             return {
                 'like_count': int(payload.get('like_count') or 0),
                 'note_title': (payload.get('name') or '').strip(),
                 'posted_at': payload.get('publish_at') or '',
-                'thumbnail': thumbnail or DEFAULT_THUMBNAIL,
+                'thumbnail': thumbnail,
             }
         if resp.status_code in (429, 503):
             time.sleep((attempt + 1) * 2)
@@ -109,14 +184,14 @@ def retry_missing_details():
     with open('notes_data.json', 'r', encoding='utf-8') as f:
         notes = json.load(f)
     
-    # スキ数・タイトル・サムネイルの不足を再取得対象にする
+    # スキ0・タイトル欠損・サムネ欠損/不正（スキありでもサムネだけ欠けるケースを含む）
     targets = [
         n for n in notes
         if n.get('like_count', 0) == 0
         or not n.get('note_title')
-        or not str(n.get('thumbnail') or '').strip()
+        or thumbnail_needs_refresh(n)
     ]
-    print(f"🚀 スキ数未取得のデータ {len(targets)} 件の再更新を開始します...")
+    print(f"🚀 再取得対象 {len(targets)} 件（スキ/タイトル/サムネの補完）...")
 
     session = requests.Session()
 

@@ -16,10 +16,12 @@ function normalizeNote(note) {
     const displayWork = note.work ?? note.anime_title ?? '未分類';
     const baseLikes = Number(note.likes ?? note.like_count ?? 0) || 0;
 
-    const candidateImage = note.image ?? note.thumbnail ?? '';
-    const safeImage = typeof candidateImage === 'string' && /^https?:\/\//.test(candidateImage)
-        ? candidateImage
-        : DEFAULT_THUMBNAIL;
+    let candidateImage = String(note.image ?? note.thumbnail ?? '').trim();
+    if (candidateImage.startsWith('//')) candidateImage = 'https:' + candidateImage;
+    const safeImage =
+        typeof candidateImage === 'string' && /^https?:\/\//.test(candidateImage)
+            ? candidateImage
+            : DEFAULT_THUMBNAIL;
 
     return {
         work: displayWork,
@@ -143,7 +145,7 @@ function render() {
     document.getElementById('note-list').innerHTML = filtered.map((note) => {
         return `
         <div class="note-card">
-            <img src="${note.image || DEFAULT_THUMBNAIL}" alt="">
+            <img src="${note.image}" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${DEFAULT_THUMBNAIL}'">
             <div class="note-main">
                 <span style="color:#ff4e00; font-size:11px; font-weight:bold;">${note.work}</span>
                 <h3 style="margin:5px 0; font-size:16px;">
