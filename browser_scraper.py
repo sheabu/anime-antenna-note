@@ -2,10 +2,22 @@ import json
 import os
 import time
 import random
+import re
 from playwright.sync_api import sync_playwright
 
 DATA_FILE = 'notes_data.json'
 ANIME_LIST_FILE = 'anime_list.json'
+
+def is_relevant_title(title, anime_title):
+    t = re.sub(r"[\s　・!！?？:：()（）「」『』【】\-\u3000]", "", str(title or "")).lower()
+    a = re.sub(r"[\s　・!！?？:：()（）「」『』【】\-\u3000]", "", str(anime_title or "")).lower()
+    if not t or t == "notearticle":
+        return False
+    if a and a in t:
+        return True
+    anchors = [w for w in re.split(r"[ 　/・]", anime_title) if len(w) >= 2]
+    return any(re.sub(r"[\s　]", "", w).lower() in t for w in anchors)
+
 
 def main():
     print("🎭 全件スキャンモードを開始します。お昼休憩の間にMacに任せましょう...")
@@ -55,8 +67,15 @@ def main():
                     raw_url = link.get_attribute('href')
                     if not raw_url: continue
                     full_url = raw_url if raw_url.startswith('http') else f"https://note.com{raw_url.split('?')[0]}"
-                    if full_url not in existing_urls:
-                        all_notes.append({"title": "note article", "url": full_url, "anime_title": anime['title']})
+                    link_text = (link.inner_text() or "").strip()
+                    if full_url not in existing_urls and is_relevant_title(link_text, anime['title']):
+                        all_notes.append({
+                            "title": "note article",
+                            "note_title": link_text,
+                            "url": full_url,
+                            "anime_title": anime['title'],
+                            "like_count": 0
+                        })
                         existing_urls.add(full_url)
                         count_per_anime += 1
                 print(f"  ✅ {count_per_anime} 件取得")

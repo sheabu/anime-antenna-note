@@ -1,11 +1,12 @@
-body { background: #f5f7f9; margin: 0; font-family: sans-serif; color: #333; }
+* { box-sizing: border-box; }
+body { background: #f5f7f9; margin: 0; font-family: sans-serif; color: #333; overflow-x: hidden; }
 .header-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; padding: 15px; align-items: center; }
 .logo { color: #ff4e00; font-weight: bold; }
 #search-input { padding: 10px; border-radius: 20px; border: 1px solid #ddd; width: 250px; }
 
-.container { display: flex; max-width: 1100px; margin: 20px auto; gap: 20px; padding: 0 15px; }
-main { flex: 1; }
-.sidebar { width: 300px; }
+.container { display: flex; flex-wrap: wrap; max-width: 1100px; width: 100%; margin: 20px auto; gap: 20px; padding: 0 15px; }
+main { flex: 1 1 680px; min-width: 0; }
+.sidebar { flex: 0 1 300px; width: 100%; max-width: 300px; min-width: 260px; }
 
 .note-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; gap: 15px; text-decoration: none; color: inherit; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 .note-card img { width: 140px; height: 80px; object-fit: cover; border-radius: 8px; }
@@ -92,4 +93,11 @@ select { width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px; border
 @keyframes xTicker {
     0% { transform: translateX(0); }
     100% { transform: translateX(-100%); }
+}
+
+@media (max-width: 900px) {
+    .header-inner { flex-wrap: wrap; gap: 10px; }
+    #search-input { width: 100%; }
+    .container { gap: 14px; }
+    main, .sidebar { flex: 1 1 100%; max-width: 100%; min-width: 0; }
 }
