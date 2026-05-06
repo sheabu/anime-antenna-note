@@ -14,6 +14,7 @@
   ],
   "works": {
     "DEATH NOTE": {
+      "required_keywords": ["DEATH NOTE", "デスノート", "Death Note"],
       "required_normalized_substrings": ["deathnote", "デスノート"],
       "exclude_keywords": [
         "メンバーシップ",
@@ -27,8 +28,185 @@
         "noteプラス",
         "プレミアムnote",
         "noteとは",
-        "noteの機能"
+        "noteの機能",
+        "有料ノート機能"
       ]
+    },
+    "CLANNAD": {
+      "required_keywords": ["CLANNAD", "クラナド"],
+      "required_normalized_substrings": ["clannad", "クラナド"],
+      "exclude_keywords": [
+        "メンバーシップ",
+        "オリジナルアイコン",
+        "noteオリジナル",
+        "加入者数"
+      ]
+    },
+    "ONE PIECE": {
+      "required_keywords": ["ONE PIECE", "ワンピース"],
+      "required_normalized_substrings": ["onepiece", "ワンピース"],
+      "exclude_keywords": ["メンバーシップ", "noteオリジナル", "加入者数"]
+    },
+    "BLEACH": {
+      "required_keywords": ["BLEACH", "ブリーチ"],
+      "required_normalized_substrings": ["bleach", "ブリーチ"],
+      "exclude_keywords": ["漂白", "洗剤", "カビ取り", "メンバーシップ", "noteオリジナル", "加入者数"]
+    },
+    "NARUTO": {
+      "required_keywords": ["NARUTO", "ナルト", "Naruto"],
+      "required_normalized_substrings": ["naruto", "ナルト"],
+      "exclude_keywords": ["鳴門の渦潮", "鳴門海峡", "メンバーシップ", "note設定"]
+    },
+    "LIAR GAME": {
+      "required_keywords": ["LIAR GAME", "ライアーゲーム", "リアゲ"],
+      "required_normalized_substrings": ["liargame", "ライアーゲーム", "リアゲ"],
+      "exclude_keywords": [
+        "noteオリジナル",
+        "メンバーシップ",
+        "加入者数",
+        "スマホゲーム",
+        "リセマラ"
+      ]
+    },
+    "Dr.STONE SCIENCE FUTURE": {
+      "required_keywords": ["Dr.STONE", "ドクターストーン"],
+      "required_normalized_substrings": ["drstone", "dr.stone", "ドクターストーン", "千空"],
+      "exclude_keywords": ["メンバーシップ", "noteオリジナル", "加入者数", "宝石の石"]
+    },
+    "STEINS;GATE": {
+      "required_keywords": ["STEINS;GATE", "シュタインズ・ゲート", "シュタインズゲート", "シュタゲ"],
+      "required_normalized_substrings": ["steinsgate", "シュタインズ", "シュタゲ"],
+      "exclude_keywords": ["メンバーシップ", "noteオリジナル", "加入者数"]
+    },
+    "Fate/Zero": {
+      "required_keywords": ["Fate/Zero", "Fate Zero", "フェイトゼロ", "フェイト／ゼロ"],
+      "required_normalized_substrings": ["fatezero", "フェイトゼロ", "衛宮切嗣"],
+      "exclude_keywords": ["noteオリジナル", "メンバーシップ", "加入者数"]
+    },
+    "ブラッククローバー": {
+      "required_keywords": ["ブラッククローバー", "BLACK CLOVER", "Black Clover", "ブラクロ"],
+      "required_normalized_substrings": ["blackclover", "ブラッククローバー", "ブラクロ"],
+      "exclude_keywords": ["メンバーシップ", "noteオリジナル", "加入者数"]
+    },
+    "僕のヒーローアカデミア": {
+      "required_keywords": [
+        "僕のヒーローアカデミア",
+        "ヒロアカ",
+        "My Hero Academia",
+        "雄英高校"
+      ],
+      "required_normalized_substrings": ["僕のヒーローアカデミア", "ヒロアカ", "雄英高校"],
+      "exclude_keywords": ["メンバーシップ", "note設定", "noteオリジナル", "加入者数"]
+    },
+    "僕のヒーローアカデミア More": {
+      "required_keywords": ["ヒロアカ", "僕のヒーローアカデミア", "雄英高校"],
+      "required_normalized_substrings": ["ヒロアカ", "僕のヒーローアカデミア"],
+      "exclude_keywords": ["メンバーシップ", "noteオリジナル", "加入者数"]
+    },
+    "メイドインアビス": {
+      "required_keywords": ["メイドインアビス", "MADE IN ABYSS", "Made in Abyss"],
+      "required_normalized_substrings": ["メイドインアビス", "madeinabyss"],
+      "exclude_keywords": ["noteオリジナル", "メンバーシップ", "加入者数"]
+    },
+    "BANANA FISH": {
+      "required_keywords": ["BANANA FISH", "Banana Fish", "バナナフィッシュ"],
+      "required_normalized_substrings": ["bananafish", "バナナフィッシュ"],
+      "exclude_keywords": ["バナナと魚", "noteオリジナル", "メンバーシップ"]
+    },
+    "NEEDY GIRL OVERDOSE": {
+      "required_keywords": [
+        "NEEDY GIRL OVERDOSE",
+        "Needy Girl Overdose",
+        "Needy Streamer Overload",
+        "超絶最かわてんしちゃん"
+      ],
+      "required_normalized_substrings": [
+        "needygirloverdose",
+        "超絶最かわ",
+        "てんしちゃん"
+      ],
+      "exclude_keywords": ["オーバードーズ", "服薬", "過剰摂取", "note設定"]
+    },
+    "ダイヤのA actⅡ Second Season": {
+      "required_keywords": [
+        "ダイヤのA",
+        "ダイヤエース",
+        "御幸一也",
+        "沢村栄純",
+        "青道高校"
+      ],
+      "required_normalized_substrings": ["ダイヤのa", "御幸一也", "沢村栄純", "青道"],
+      "exclude_keywords": ["ダイヤモンド投資", "noteオリジナル", "メンバーシップ", "加入者数"]
+    },
+    "スター・ウォーズ：モール／シャドウ・ロード": {
+      "required_keywords": [
+        "スター・ウォーズ",
+        "Star Wars",
+        "ダース・モール",
+        "シャドウ・ロード"
+      ],
+      "required_normalized_substrings": ["starwars", "スターウォーズ", "ダースモール", "シャドウ・ロード"],
+      "exclude_keywords": ["ロードバイク", "noteオリジナル"]
+    },
+    "進撃の巨人": {
+      "required_keywords": ["進撃の巨人", "Attack on Titan", "エレン・イェーガー", "調査兵団"],
+      "required_normalized_substrings": ["進撃の巨人", "attackontitan", "調査兵団", "イェーガー"],
+      "exclude_keywords": ["株式の巨人", "noteオリジナル", "メンバーシップ"]
+    },
+    "鬼滅の刃": {
+      "required_keywords": ["鬼滅の刃", "鬼滅", "竈門炭治郎", "鬼殺隊"],
+      "required_normalized_substrings": ["鬼滅の刃", "鬼滅", "竈門炭治郎", "鬼殺隊"],
+      "exclude_keywords": ["メンバーシップ", "note設定", "鍛冶屋"]
+    },
+    "鬼滅の刃シリーズ再放送": {
+      "required_keywords": ["鬼滅の刃", "鬼滅", "再放送"],
+      "required_normalized_substrings": ["鬼滅の刃", "鬼滅"],
+      "exclude_keywords": ["メンバーシップ", "noteオリジナル", "加入者数"]
+    },
+    "葬送のフリーレン": {
+      "required_keywords": ["葬送のフリーレン", "フリーレン", "シュタルク", "フェルン"],
+      "required_normalized_substrings": ["葬送のフリーレン", "フリーレン", "フェルン", "シュタルク"],
+      "exclude_keywords": ["葬儀社", "noteオリジナル", "メンバーシップ"]
+    },
+    "ハイキュー!!": {
+      "required_keywords": ["ハイキュー", "烏野高校", "日向翔陽", "音駒高校"],
+      "required_normalized_substrings": ["ハイキュー", "烏野", "日向翔陽"],
+      "exclude_keywords": ["メンバーシップ", "note設定", "卓球キュー"]
+    },
+    "推しの子": {
+      "required_keywords": ["推しの子", "おしのこ", "Oshi no Ko", "星野アイ"],
+      "required_normalized_substrings": ["推しの子", "おしのこ", "oshinoko", "星野アイ"],
+      "exclude_keywords": ["推ししか勝たん", "恋の推進", "noteオリジナル"]
+    },
+    "とんがり帽子のアトリエ": {
+      "required_keywords": ["とんがり帽子のアトリエ", "トンガリ帽子", "とんガリ帽子のアトリエ", "ココ"],
+      "required_normalized_substrings": ["とんがり帽子のアトリエ", "トンガリ帽子"],
+      "exclude_keywords": ["アトリエの作り方", "note設定", "メンバーシップ"]
+    },
+    "コードギアス 反逆のルルーシュ": {
+      "required_keywords": [
+        "コードギアス",
+        "反逆のルルーシュ",
+        "ルルーシュ",
+        "Lelouch",
+        "GEASS"
+      ],
+      "required_normalized_substrings": ["コードギアス", "ルルーシュ", "geass", "ギアス"],
+      "exclude_keywords": ["ギアスの使い方", "note設定", "メンバーシップ"]
+    },
+    "あの日見た花の名前を僕達はまだ知らない。": {
+      "required_keywords": [
+        "あの日見た花の名前を僕達はまだ知らない",
+        "あの花",
+        "めんま",
+        "本間芽衣子"
+      ],
+      "required_normalized_substrings": [
+        "あの日見た花の名前を僕達はまだ知らない",
+        "あの花",
+        "めんま"
+      ],
+      "exclude_keywords": ["noteオリジナル", "メンバーシップ"]
     }
   }
 }
