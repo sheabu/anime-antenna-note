@@ -4,100 +4,42 @@ async function loadNotes() {
     try {
         const response = await fetch('notes_data.json');
         allNotes = await response.json();
-        
-        const animeTitles = [...new Set(allNotes.map(n => n.anime_title))].filter(Boolean).sort();
-        const filterSelect = document.getElementById('anime-filter');
-        filterSelect.innerHTML = '<option value="">すべての作品</option>';
-        animeTitles.forEach(title => {
-            const opt = document.createElement('option');
-            opt.value = title;
-            opt.textContent = title;
-            filterSelect.appendChild(opt);
-        });
-
         displayNotes();
-    } catch (error) {
-        console.error("Error:", error);
-    }
+    } catch (error) { console.error("Error:", error); }
 }
 
 function displayNotes() {
     const listContainer = document.getElementById('note-list');
-    const searchTerm = document.getElementById('search-input').value.toLowerCase();
-    const selectedAnime = document.getElementById('anime-filter').value;
-    const sortOrder = document.getElementById('sort-order').value;
-
     
-    let filtered = allNotes.filter(n => {
-        const title = (n.note_title || "").toLowerCase();
-        const anime = (n.anime_title || "").toLowerCase();
-        const tags = (n.tags || []);
+    // フィルタリング条件の定義
+    const filtered = allNotes.filter(n => {
+        const title = n.note_title || "";
+        const tags = n.tags || [];
         
-        // 除外ワードチェック
-        const excludeWords = ['うそ探偵', 'YOSOHACHI', '電車', '募集', '副業'];
-        const isIrrelevant = excludeWords.some(word => 
-            title.includes(word.toLowerCase()) || 
-            tags.some(tag => tag.includes(word))
-        );
+        // 1. 除外したいタグやタイトルの指定
+        const isBlacklisted = tags.includes("うそ探偵トマント") || title.includes("YOSOHACHI") || title.includes("電車");
+        
+        // 2. アニメに関係するタグが1つでもあるか（タグ基準の抽出）
+        const animeKeywords = ["アニメ", "感想", "考察", "マンガ", "レビュー"];
+        const hasAnimeTag = tags.some(tag => animeKeywords.some(key => tag.includes(key)));
 
-        return !isIrrelevant && 
-               (title.includes(searchTerm) || anime.includes(searchTerm)) && 
-               (!selectedAnime || n.anime_title === selectedAnime);
+        return !isBlacklisted && (hasAnimeTag || title.includes("アニメ"));
     });
-
-        const anime = (n.anime_title || "").toLowerCase();
-        const isIrrelevant = (n.tags || []).includes("うそ探偵トマント") || title.includes("YOSOHACHI"); return !isIrrelevant && (title.includes(searchTerm) || anime.includes(searchTerm)) && 
-               (!selectedAnime || n.anime_title === selectedAnime);
-    });
-
-    if (sortOrder === 'likes') {
-        filtered.sort((a, b) => (b.like_count || 0) - (a.like_count || 0));
-    } else {
-        filtered.reverse();
-    }
-
-    document.getElementById('result-count').textContent = `${filtered.length}件`;
 
     listContainer.innerHTML = filtered.map(n => {
-        // エラータイトルの書き換え
-        let displayTitle = n.note_title || "記事タイトルを取得中...";
-        if (displayTitle.includes("403 ERROR") || displayTitle.includes("取得失敗")) {
-            displayTitle = "（読み込み中...）noteで詳細を確認";
-        }
-
-        // ダミー画像生成サービスのURLを利用して、「No Image」を少しオシャレに
         const dummyImg = `https://placehold.jp/24/3d5afe/ffffff/200x120.png?text=${encodeURIComponent(n.anime_title || 'Anime')}`;
         const imgSrc = (n.thumbnail && !n.thumbnail.includes("error")) ? n.thumbnail : dummyImg;
 
         return `
-        <a href="${n.url}" target="_blank" class="note-card">
-            <img src="${imgSrc}" class="note-card-img" alt="thumbnail">
-            <div class="note-card-content">
-                <div class="note-card-title">${displayTitle}</div>
-                <div class="note-card-meta">
-                    <span class="badge bg-primary">${n.anime_title || '作品名不明'}</span>
-                    <span class="badge-likes">❤️ ${n.like_count || 0}</span>
-                </div>
+        <a href="${n.url}" target="_blank" class="note-card mb-3 d-flex align-items-center text-decoration-none text-dark p-2 border rounded bg-white shadow-sm">
+            <img src="${imgSrc}" style="width:120px; height:80px; object-fit:cover; border-radius:4px;" class="me-3">
+            <div>
+                <h6 class="mb-1 fw-bold">${n.note_title || "タイトル取得中..."}</h6>
+                <span class="badge bg-primary">${n.anime_title || '作品名不明'}</span>
+                <span class="ms-2 text-danger">❤️ ${n.like_count || 0}</span>
             </div>
         </a>
     `}).join('');
 }
 
-document.getElementById('search-input').addEventListener('input', displayNotes);
-document.getElementById('anime-filter').addEventListener('change', displayNotes);
-document.getElementById('sort-order').addEventListener('change', displayNotes);
-
 window.onload = loadNotes;
-
-// ティッカーの中身を更新する関数
-function updateTicker() {
-    const ticker = document.getElementById('news-ticker');
-    if (!allNotes.length) return;
-    
-    // 最新の10件をピックアップ
-    const latest = allNotes.slice(0, 10);
-    ticker.innerHTML = latest.map(n => `<span>🔥 新着記事: ${n.note_title || '取得中...'}</span>`).join('');
-}
-
-// loadNotesの最後で実行するように調整
-// (既存のloadNotes関数の最後に updateTicker(); を手動で入れるか、script.js全体を再構成)
