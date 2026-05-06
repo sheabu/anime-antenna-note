@@ -78,3 +78,24 @@
     background: #fff0f0;
     border: 1px solid #ff4b00;
 }
+
+/* ランキングバッジの装飾 */
+.badge.rounded-pill {
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    padding: 8px 12px !important;
+}
+
+/* スマホでの表示最適化 */
+@media (max-width: 768px) {
+    .note-card {
+        flex-direction: column;
+    }
+    .note-card-img {
+        width: 100%;
+        height: 180px;
+    }
+    .note-card-content {
+        padding: 15px;
+    }
+}
