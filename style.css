@@ -1,224 +1,36 @@
-.note-card {
-    display: flex;
-    background: #fff;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    overflow: hidden;
-    transition: transform 0.2s;
-    text-decoration: none;
-    color: inherit;
-    height: 140px;
-}
-.note-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    color: inherit;
-}
-.note-card-img {
-    width: 200px;
-    min-width: 200px;
-    height: 100%;
-    object-fit: cover;
-    background: #eee;
-}
-.note-card-content {
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex-grow: 1;
-}
-.note-card-title {
-    font-weight: bold;
-    font-size: 1.1rem;
-    line-height: 1.4;
-    margin-bottom: 5px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-.note-card-meta {
-    font-size: 0.85rem;
-    color: #666;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.badge-likes {
-    background-color: #ff4b00;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 20px;
-}
-@media (max-width: 576px) {
-    .note-card { height: auto; flex-direction: column; }
-    .note-card-img { width: 100%; height: 150px; }
-}
-
-/* ロゴ周りの調整 */
-.navbar-brand img {
-    transition: 0.3s;
-}
-.navbar-brand img:hover {
-    opacity: 0.8;
-}
-
-/* カード内の微調整 */
-.note-card-title {
-    color: #333;
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-}
-.badge-likes {
-    font-weight: bold;
-    color: #ff4b00;
-    background: #fff0f0;
-    border: 1px solid #ff4b00;
-}
-
-/* ランキングバッジの装飾 */
-.badge.rounded-pill {
-    font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    padding: 8px 12px !important;
-}
-
-/* スマホでの表示最適化 */
-@media (max-width: 768px) {
-    .note-card {
-        flex-direction: column;
-    }
-    .note-card-img {
-        width: 100%;
-        height: 180px;
-    }
-    .note-card-content {
-        padding: 15px;
-    }
-}
-
-/* 背景にアニメ風ドット（網点）パターンを追加 */
+/* 基本レイアウトの固定 */
 body {
     background-image: radial-gradient(#d9d9d9 1px, transparent 1px);
     background-size: 20px 20px;
-    background-color: #f8f9fa; /* 全体のベースカラーを少しグレーに */
+    background-color: #f8f9fa;
+    margin: 0;
+    font-family: sans-serif;
 }
 
-/* 背景に柄が入るため、記事カードをより白く際立たせる */
-.note-card {
-    background-color: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(4px); /* ガラスのような質感をプラス */
-    border: none;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* 影を足して浮き上がらせる */
-}
+.container { display: flex; gap: 20px; max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+#note-list { flex: 2; } /* 左側：記事リスト */
+.sidebar { flex: 1; min-width: 300px; } /* 右側：サイドバー */
 
-/* ニュースティッカーのスタイル */
-.ticker-wrapper {
-    background: #333;
-    color: #fff;
-    overflow: hidden;
-    padding: 10px 0;
-    font-size: 0.9rem;
-    white-space: nowrap;
-}
-
-.ticker-content {
-    display: inline-block;
-    padding-left: 100%;
-    animation: ticker 30s linear infinite;
-}
-
-.ticker-content span {
-    margin-right: 50px;
-}
-
-@keyframes ticker {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
-}
-
-/* 公式リンクの自動スクロール窓 */
+/* 動く公式窓のスタイル */
 .official-ticker-container {
-    height: 150px;
+    height: 250px;
     overflow: hidden;
-    position: relative;
-    background: #fdfdfd;
-}
-
-.official-ticker-content {
-    position: absolute;
-    width: 100%;
-    animation: vertical-ticker 15s linear infinite;
-}
-
-.official-ticker-content a {
-    display: block;
-    padding: 10px;
-    color: #3d5afe;
-    text-decoration: none;
-    border-bottom: 1px dashed #eee;
-    font-size: 0.9rem;
-}
-
-.official-ticker-content a:hover {
-    background: #eef0ff;
-}
-
-@keyframes vertical-ticker {
-    0% { top: 0; }
-    100% { top: -100%; }
-}
-.official-ticker-container {
-    height: 200px;
-    overflow: hidden;
-    position: relative;
     background: #fff;
+    border-radius: 8px;
+    border: 1px solid #ddd;
 }
 .official-ticker-content {
-    position: absolute;
-    width: 100%;
     animation: vertical-ticker 20s linear infinite;
 }
 .official-ticker-content a {
     display: block;
-    padding: 12px;
+    padding: 15px;
     color: #3d5afe;
     text-decoration: none;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 0.95rem;
-    transition: background 0.2s;
+    border-bottom: 1px solid #eee;
 }
-.official-ticker-content a:hover { background: #f5f7ff; }
 
 @keyframes vertical-ticker {
-    0% { top: 0; }
-    100% { top: -100%; }
-}
-
-/* サイドバーのスクロールアニメーション確定 */
-.official-ticker-container {
-    height: 250px; /* 少し高さを出して見やすく */
-    overflow: hidden;
-    position: relative;
-    background: #fff;
-    border-radius: 0 0 8px 8px;
-}
-
-.official-ticker-content {
-    position: absolute;
-    width: 100%;
-    top: 0;
-    animation: scroll-up 25s linear infinite;
-}
-
-.official-ticker-content:hover {
-    animation-play-state: paused; /* マウスを乗せると止まる親切設計 */
-}
-
-@keyframes scroll-up {
-    0% { top: 0; }
-    100% { top: -100%; }
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
 }

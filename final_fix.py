@@ -1,4 +1,4 @@
-
+html_content = """
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -36,3 +36,6 @@
     <script src="script.js"></script>
 </body>
 </html>
+"""
+with open('index.html', 'w') as f:
+    f.write(html_content)
