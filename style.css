@@ -1,0 +1,66 @@
+.note-card {
+    display: flex;
+    background: #fff;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    overflow: hidden;
+    transition: transform 0.2s;
+    text-decoration: none;
+    color: inherit;
+    height: 140px;
+}
+.note-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    color: inherit;
+}
+.note-card-img {
+    width: 200px;
+    min-width: 200px;
+    height: 100%;
+    object-fit: cover;
+    background: #eee;
+}
+.note-card-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+}
+.note-card-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    line-height: 1.4;
+    margin-bottom: 5px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.note-card-meta {
+    font-size: 0.85rem;
+    color: #666;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.badge-likes {
+    background-color: #ff4b00;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 20px;
+}
+@media (max-width: 576px) {
+    .note-card { height: auto; flex-direction: column; }
+    .note-card-img { width: 100%; height: 150px; }
+}
+
+/* ロゴ周りの調整 */
+.navbar-brand img {
+    transition: 0.3s;
+}
+.navbar-brand img:hover {
+    opacity: 0.8;
+}
