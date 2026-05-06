@@ -10,15 +10,15 @@
 <body>
     <header>
         <div class="header-inner">
-            <div class="logo">あにnoteアンテナ</div>
-            <input type="text" id="search-input" placeholder="作品やキーワードで検索...">
+            <h1 class="logo">あにnoteアンテナ</h1>
+            <input type="text" id="search-input" placeholder="作品名やキーワードで検索...">
         </div>
     </header>
 
     <div class="container">
         <main>
-            <div class="list-info">
-                <h2 id="list-title">新着・人気記事</h2>
+            <div class="main-header">
+                <h2>新着・人気記事</h2>
                 <span id="result-count">0 articles</span>
             </div>
             <div id="note-list">
@@ -26,28 +26,28 @@
         </main>
 
         <aside class="sidebar">
-            <div class="sidebar-panel">
-                <h3>📺 作品から探す</h3>
+            <div class="sidebar-panel work-panel">
+                <h3>🔍 作品から探す</h3>
                 <select id="work-filter">
                     <option value="all">すべての作品</option>
                 </select>
             </div>
 
-            <div class="sidebar-panel">
+            <div class="sidebar-panel sort-panel">
                 <h3>🔃 並び替え</h3>
                 <select id="sort-order">
-                    <option value="new">最新順</option>
+                    <option value="new">新着順</option>
                     <option value="popular">人気順（スキ数）</option>
                 </select>
             </div>
 
             <div class="sidebar-panel x-panel">
-                <div class="panel-header">📢 公式X トレインチャンネル</div>
-                <div class="train-window">
-                    <div class="x-content">
+                <h3>📢 公式X 最新情報</h3>
+                <div class="x-window">
+                    <div class="x-scroller">
                         <a class="twitter-timeline" 
                            data-chrome="noheader nofooter noborders transparent" 
-                           data-height="1200" 
+                           data-height="1000" 
                            href="https://twitter.com/anime_antenna_">
                            Loading...
                         </a>

@@ -1,49 +1,52 @@
 body {
-    background-color: #f0f2f5;
+    background-color: #f8f9fa;
     background-image: radial-gradient(#d1d5db 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-size: 20px 20px;
     margin: 0;
-    font-family: sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
     color: #333;
 }
 
-.container { display: flex; max-width: 1200px; margin: 25px auto; gap: 25px; padding: 0 15px; }
+.container { display: flex; max-width: 1200px; margin: 30px auto; gap: 30px; padding: 0 15px; }
 
 /* 記事カード */
 .note-card {
     background: white;
     border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
+    padding: 20px;
+    margin-bottom: 15px;
     display: flex;
-    gap: 18px;
+    gap: 20px;
     text-decoration: none;
     color: inherit;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    transition: 0.2s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: 0.3s ease;
 }
-.note-card:hover { transform: translateX(8px); box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
-.note-card img { width: 140px; height: 80px; object-fit: cover; border-radius: 8px; }
+.note-card:hover { transform: translateY(-3px) translateX(5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+.note-card img { width: 160px; height: 90px; object-fit: cover; border-radius: 8px; }
 
 /* サイドバー */
-.sidebar { width: 320px; }
+.sidebar { width: 320px; flex-shrink: 0; }
 .sidebar-panel {
     background: white;
-    padding: 18px;
+    padding: 20px;
     border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
-select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 15px; }
+select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; background: white; cursor: pointer; }
 
-/* トレインチャンネル演出 */
-.x-panel { background: #1a1a1a; padding: 0; overflow: hidden; border: 3px solid #333; }
-.panel-header { background: #444; color: #00ff00; padding: 10px; font-weight: bold; font-family: monospace; }
-.train-window { height: 500px; overflow-y: auto; background: #000; }
-/* スクロールバーを消してより画面ぽく */
-.train-window::-webkit-scrollbar { width: 0; }
+/* 電車広告のように流れる公式X */
+.x-window {
+    height: 500px;
+    overflow-y: auto;
+    border-radius: 8px;
+    border: 1px solid #f0f0f0;
+}
+/* スクロールバーを消して、より広告ぽく */
+.x-window::-webkit-scrollbar { width: 0; }
 
 header { background: white; border-bottom: 1px solid #eee; padding: 15px 0; }
 .header-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; padding: 0 15px; align-items: center; }
 .logo { font-size: 24px; font-weight: bold; color: #ff4e00; }
-#search-input { padding: 10px 20px; border-radius: 20px; border: 1px solid #ddd; width: 280px; }
+#search-input { padding: 12px 20px; border-radius: 25px; border: 1px solid #ddd; width: 300px; }

@@ -26,14 +26,14 @@ function updateList() {
     const sort = document.getElementById('sort-order').value;
     const search = document.getElementById('search-input').value.toLowerCase();
 
-    // フィルタリング
+    // フィルタリング（死んでいました）
     let filtered = allNotes.filter(n => {
         const matchWork = (work === 'all' || n.work === work);
         const matchSearch = n.title.toLowerCase().includes(search);
         return matchWork && matchSearch;
     });
 
-    // ソート（スキ数と日付）
+    // ソート（人気順と最新順）
     if (sort === 'new') {
         filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
     } else {
@@ -53,20 +53,20 @@ function render(data) {
         const card = document.createElement('a');
         card.className = 'note-card';
         card.href = item.url;
-        card.target = '_blank'; // 新しいタブで開く
+        card.target = '_blank';
         card.innerHTML = `
             <img src="${item.image || 'no-image.png'}" alt="thumb">
             <div class="note-info">
                 <div style="font-size:12px; color:#ff4e00; font-weight:bold;">${item.work}</div>
                 <h3 style="margin:5px 0; font-size:16px;">${item.title}</h3>
-                <div style="font-size:13px; color:#666;">❤️ ${item.likes || 0} likes</div>
+                <div style="font-size:13px; color:#666;">❤️ ${item.likes || 0}likes</div>
             </div>
         `;
         list.appendChild(card);
     });
 }
 
-// イベントリスナーの登録
+// イベントリスナーの登録（死んでいました）
 document.getElementById('work-filter').addEventListener('change', updateList);
 document.getElementById('sort-order').addEventListener('change', updateList);
 document.getElementById('search-input').addEventListener('input', updateList);
