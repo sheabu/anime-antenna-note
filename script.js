@@ -3,14 +3,11 @@ let allNotes = [];
 async function loadNotes() {
     try {
         const response = await fetch('notes_data.json');
-        if (!response.ok) throw new Error('Network response was not ok');
         allNotes = await response.json();
         
-        console.log("Loaded notes:", allNotes.length);
-
         const animeTitles = [...new Set(allNotes.map(n => n.anime_title))].filter(Boolean).sort();
         const filterSelect = document.getElementById('anime-filter');
-        filterSelect.innerHTML = '<option value="">すべての作品</option>'; // 初期化
+        filterSelect.innerHTML = '<option value="">すべての作品</option>';
         animeTitles.forEach(title => {
             const opt = document.createElement('option');
             opt.value = title;
@@ -20,8 +17,7 @@ async function loadNotes() {
 
         displayNotes();
     } catch (error) {
-        console.error("データの読み込みに失敗しました:", error);
-        document.getElementById('note-list').innerHTML = '<p class="text-center">データの読み込みに失敗しました。再読み込みしてください。</p>';
+        console.error("Error:", error);
     }
 }
 
@@ -46,23 +42,29 @@ function displayNotes() {
 
     document.getElementById('result-count').textContent = `${filtered.length}件`;
 
-    if (filtered.length === 0) {
-        listContainer.innerHTML = '<p class="text-center p-5">該当する記事が見つかりません。</p>';
-        return;
-    }
+    listContainer.innerHTML = filtered.map(n => {
+        // エラータイトルの書き換え
+        let displayTitle = n.note_title || "記事タイトルを取得中...";
+        if (displayTitle.includes("403 ERROR") || displayTitle.includes("取得失敗")) {
+            displayTitle = "（読み込み中...）noteで詳細を確認";
+        }
 
-    listContainer.innerHTML = filtered.map(n => `
+        // ダミー画像生成サービスのURLを利用して、「No Image」を少しオシャレに
+        const dummyImg = `https://placehold.jp/24/3d5afe/ffffff/200x120.png?text=${encodeURIComponent(n.anime_title || 'Anime')}`;
+        const imgSrc = (n.thumbnail && !n.thumbnail.includes("error")) ? n.thumbnail : dummyImg;
+
+        return `
         <a href="${n.url}" target="_blank" class="note-card">
-            <img src="${n.thumbnail || 'https://placehold.jp/24/cccccc/ffffff/200x120.png?text=No+Image'}" class="note-card-img" onerror="this.src='https://placehold.jp/200x120.png?text=No+Image'">
+            <img src="${imgSrc}" class="note-card-img" alt="thumbnail">
             <div class="note-card-content">
-                <div class="note-card-title">${n.note_title || '記事タイトルを取得中...'}</div>
+                <div class="note-card-title">${displayTitle}</div>
                 <div class="note-card-meta">
                     <span class="badge bg-primary">${n.anime_title || '作品名不明'}</span>
                     <span class="badge-likes">❤️ ${n.like_count || 0}</span>
                 </div>
             </div>
         </a>
-    `).join('');
+    `}).join('');
 }
 
 document.getElementById('search-input').addEventListener('input', displayNotes);

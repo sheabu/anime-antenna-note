@@ -64,3 +64,17 @@
 .navbar-brand img:hover {
     opacity: 0.8;
 }
+
+/* カード内の微調整 */
+.note-card-title {
+    color: #333;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+.badge-likes {
+    font-weight: bold;
+    color: #ff4b00;
+    background: #fff0f0;
+    border: 1px solid #ff4b00;
+}
