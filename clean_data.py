@@ -15,7 +15,7 @@ def is_relevant(note, anime_titles):
         return False
     if not url.startswith("https://note.com/"):
         return False
-    if not note_title or note_title in {"403 ERROR", "note article"}:
+    if not note_title or normalize_text(note_title) in {"403error", "notearticle"}:
         return False
     if "403" in note_title:
         return False

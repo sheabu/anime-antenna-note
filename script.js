@@ -1,9 +1,17 @@
 let notesData = [];
 const RANKING_REFRESH_MS = 5 * 60 * 1000;
 
+function isGenericTitle(value) {
+    return /^\s*note\s*article\s*$/i.test(String(value || ''));
+}
+
 function normalizeNote(note) {
     const safeUrl = typeof note.url === 'string' && /^https?:\/\//.test(note.url) ? note.url : '#';
-    const displayTitle = note.note_title ?? note.title ?? '（無題）';
+    const noteTitle = String(note.note_title || '').trim();
+    const legacyTitle = String(note.title || '').trim();
+    const displayTitle = (!isGenericTitle(noteTitle) && noteTitle)
+        || (!isGenericTitle(legacyTitle) && legacyTitle)
+        || `${note.anime_title ?? note.work ?? 'アニメ'} 関連note`;
     const displayWork = note.work ?? note.anime_title ?? '未分類';
     const baseLikes = Number(note.likes ?? note.like_count ?? 0) || 0;
 
