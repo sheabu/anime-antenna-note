@@ -1,45 +1,83 @@
 let allNotes = [];
 
+// 1. データの読み込み
 async function loadNotes() {
     try {
         const response = await fetch('notes_data.json');
         allNotes = await response.json();
-        displayNotes();
-    } catch (error) { console.error("Error:", error); }
+        
+        // 作品名プルダウンを自動生成
+        populateWorkFilter();
+        // 初期表示
+        renderNotes(allNotes);
+    } catch (err) {
+        console.error("データの読み込みに失敗しました", err);
+    }
 }
 
-function displayNotes() {
-    const listContainer = document.getElementById('note-list');
+// 2. 作品プルダウンの動的生成
+function populateWorkFilter() {
+    const filter = document.getElementById('work-filter');
+    const works = [...new Set(allNotes.map(n => n.work))].filter(Boolean);
     
-    // フィルタリング条件の定義
-    const filtered = allNotes.filter(n => {
-        const title = n.note_title || "";
-        const tags = n.tags || [];
-        
-        // 1. 除外したいタグやタイトルの指定
-        const isBlacklisted = tags.includes("うそ探偵トマント") || title.includes("YOSOHACHI") || title.includes("電車");
-        
-        // 2. アニメに関係するタグが1つでもあるか（タグ基準の抽出）
-        const animeKeywords = ["アニメ", "感想", "考察", "マンガ", "レビュー", "推しの子", "進撃", "呪術", "鬼滅", "スパイファミリー"];
-        const hasAnimeTag = tags.some(tag => animeKeywords.some(key => tag.includes(key)));
+    works.forEach(work => {
+        const option = document.createElement('option');
+        option.value = work;
+        option.textContent = work;
+        filter.appendChild(option);
+    });
+}
 
-        return !isBlacklisted && (hasAnimeTag || title.includes("アニメ"));
+// 3. 描画機能（リンクも正常化）
+function renderNotes(notes) {
+    const list = document.getElementById('note-list');
+    const count = document.getElementById('article-count');
+    list.innerHTML = '';
+    count.textContent = `${notes.length} 件の記事が見つかりました`;
+
+    notes.forEach(note => {
+        const card = document.createElement('a');
+        card.className = 'note-card';
+        card.href = note.url;
+        card.target = '_blank';
+        card.innerHTML = `
+            <img src="${note.image || 'default.png'}" alt="thumb">
+            <div class="note-info">
+                <h3>${note.title}</h3>
+                <div class="meta">
+                    <span class="work-tag">${note.work}</span>
+                    <span class="likes">❤️ ${note.likes}</span>
+                </div>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+// 4. フィルタリングとソート（ここが死んでいました）
+function updateList() {
+    const work = document.getElementById('work-filter').value;
+    const sort = document.getElementById('sort-order').value;
+    const search = document.getElementById('search-input').value.toLowerCase();
+
+    let filtered = allNotes.filter(n => {
+        const matchWork = (work === 'all' || n.work === work);
+        const matchSearch = n.title.toLowerCase().includes(search);
+        return matchWork && matchSearch;
     });
 
-    listContainer.innerHTML = filtered.map(n => {
-        const dummyImg = `https://placehold.jp/24/3d5afe/ffffff/200x120.png?text=${encodeURIComponent(n.anime_title || 'Anime')}`;
-        const imgSrc = (n.thumbnail && !n.thumbnail.includes("error")) ? n.thumbnail : dummyImg;
+    if (sort === 'new') {
+        filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+    } else {
+        filtered.sort((a, b) => b.likes - a.likes);
+    }
 
-        return `
-        <a href="${n.url}" target="_blank" class="note-card mb-3 d-flex align-items-center text-decoration-none text-dark p-2 border rounded bg-white shadow-sm">
-            <img src="${imgSrc}" style="width:120px; height:80px; object-fit:cover; border-radius:4px;" class="me-3">
-            <div>
-                <h6 class="mb-1 fw-bold">${n.note_title || "タイトル取得中..."}</h6>
-                <span class="badge bg-primary">${n.anime_title || '作品名不明'}</span>
-                <span class="ms-2 text-danger">❤️ ${n.like_count || 0}</span>
-            </div>
-        </a>
-    `}).join('');
+    renderNotes(filtered);
 }
 
-window.onload = loadNotes;
+// イベント登録
+document.getElementById('work-filter').addEventListener('change', updateList);
+document.getElementById('sort-order').addEventListener('change', updateList);
+document.getElementById('search-input').addEventListener('input', updateList);
+
+loadNotes();

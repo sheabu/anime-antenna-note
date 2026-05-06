@@ -10,38 +10,53 @@
 <body>
     <header>
         <div class="header-container">
-            <img src="logo.png" alt="あにnoteアンテナ" class="logo">
-            <input type="text" id="search-input" placeholder="記事を検索...">
+            <div class="logo-area">
+                <img src="logo.png" alt="あにnoteアンテナ" class="logo">
+                <span>あにnoteアンテナ</span>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="キーワードで記事を探す...">
+            </div>
         </div>
     </header>
 
     <div class="container">
         <main>
-            <h2 id="list-title">新着・人気記事</h2>
+            <div class="main-header">
+                <h2 id="list-title">新着・人気記事</h2>
+                <span class="count-badge" id="article-count">0 articles</span>
+            </div>
             <div id="note-list">
                 </div>
         </main>
 
         <aside class="sidebar">
             <div class="sidebar-panel">
-                <h3>作品から探す</h3>
+                <h3><i class="icon">📺</i> 作品から探す</h3>
                 <select id="work-filter">
                     <option value="all">すべての作品</option>
-                </select>
+                    </select>
             </div>
 
             <div class="sidebar-panel">
-                <h3>並び替え</h3>
+                <h3><i class="icon">🔃</i> 並び替え</h3>
                 <select id="sort-order">
-                    <option value="new">新着順</option>
+                    <option value="new">最新順</option>
                     <option value="popular">人気順（スキ数）</option>
                 </select>
             </div>
 
             <div class="sidebar-panel x-panel">
-                <h3>📢 公式X最新情報</h3>
-                <div class="x-timeline-container">
-                    <a class="twitter-timeline" data-height="500" href="https://twitter.com/anime_antenna_?ref_src=twsrc%5Etfw">Tweets by anime</a>
+                <h3><i class="icon">📢</i> 公式X ニュース</h3>
+                <div class="x-train-window">
+                    <div class="x-scroller" id="x-embed-area">
+                        <a class="twitter-timeline" 
+                           data-chrome="noheader nofooter noborders transparent" 
+                           data-height="800" 
+                           href="https://twitter.com/anime_antenna_">
+                           読み込み中...
+                        </a>
+                    </div>
                 </div>
             </div>
         </aside>
