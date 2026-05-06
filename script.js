@@ -1,64 +1,47 @@
-let allNotes = [];
+let notes = [];
 
-async function init() {
-    const listArea = document.getElementById('note-list');
-    const countArea = document.getElementById('result-count');
-
+async function loadData() {
     try {
-        const response = await fetch('notes_data.json');
-        if (!response.ok) throw new Error('Network error');
-        allNotes = await response.json();
+        const res = await fetch('notes_data.json');
+        if (!res.ok) throw new Error('File not found');
+        notes = await res.json();
         
-        // プルダウン生成
+        // 作品リストを生成
         const filter = document.getElementById('work-filter');
-        const works = [...new Set(allNotes.map(n => n.work))].filter(Boolean).sort();
-        works.forEach(work => {
+        const works = [...new Set(notes.map(n => n.work))].sort();
+        works.forEach(w => {
             const opt = document.createElement('option');
-            opt.value = work;
-            opt.textContent = work;
+            opt.value = w; opt.textContent = w;
             filter.appendChild(opt);
         });
 
-        // イベント登録
-        [filter, document.getElementById('sort-order')].forEach(el => el.addEventListener('change', update));
-        document.getElementById('search-input').addEventListener('input', update);
-
-        update();
+        render();
     } catch (e) {
-        countArea.textContent = "データの読み込みに失敗しました。";
-        console.error(e);
+        document.getElementById('note-list').innerHTML = "記事データの読み込みに失敗しました。JSONファイルが存在するか確認してください。";
     }
 }
 
-function update() {
+function render() {
     const work = document.getElementById('work-filter').value;
-    const sort = document.getElementById('sort-order').value;
     const search = document.getElementById('search-input').value.toLowerCase();
-
-    let filtered = allNotes.filter(n => 
+    
+    const filtered = notes.filter(n => 
         (work === 'all' || n.work === work) && n.title.toLowerCase().includes(search)
     );
 
-    filtered.sort((a, b) => sort === 'new' ? 
-        new Date(b.date) - new Date(a.date) : (b.likes || 0) - (a.likes || 0)
-    );
-
-    render(filtered);
-}
-
-function render(data) {
-    const list = document.getElementById('note-list');
-    document.getElementById('result-count').textContent = `${data.length} 件の記事を表示中`;
-    list.innerHTML = data.map(item => `
-        <a href="${item.url}" target="_blank" class="note-card">
-            <img src="${item.image || 'no-image.png'}">
-            <div class="info">
-                <div style="font-size:11px; color:#ff4e00; font-weight:bold;">${item.work}</div>
-                <h3 style="margin:5px 0; font-size:16px;">${item.title}</h3>
-                <div style="font-size:12px; color:#888;">❤️ ${item.likes || 0} likes</div>
+    document.getElementById('note-list').innerHTML = filtered.map(n => `
+        <a href="${n.url}" target="_blank" class="note-card">
+            <img src="${n.image || ''}">
+            <div>
+                <div style="font-size:10px; color:#ff4e00;">${n.work}</div>
+                <h3 style="margin:5px 0; font-size:15px;">${n.title}</h3>
+                <div style="font-size:12px; color:#888;">❤️ ${n.likes || 0}</div>
             </div>
         </a>
     `).join('');
 }
 
-init();
+document.getElementById('work-filter').addEventListener('change', render);
+document.getElementById('search-input').addEventListener('input', render);
+
+loadData();
