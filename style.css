@@ -197,3 +197,28 @@ body {
     0% { top: 0; }
     100% { top: -100%; }
 }
+
+/* サイドバーのスクロールアニメーション確定 */
+.official-ticker-container {
+    height: 250px; /* 少し高さを出して見やすく */
+    overflow: hidden;
+    position: relative;
+    background: #fff;
+    border-radius: 0 0 8px 8px;
+}
+
+.official-ticker-content {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    animation: scroll-up 25s linear infinite;
+}
+
+.official-ticker-content:hover {
+    animation-play-state: paused; /* マウスを乗せると止まる親切設計 */
+}
+
+@keyframes scroll-up {
+    0% { top: 0; }
+    100% { top: -100%; }
+}

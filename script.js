@@ -27,8 +27,24 @@ function displayNotes() {
     const selectedAnime = document.getElementById('anime-filter').value;
     const sortOrder = document.getElementById('sort-order').value;
 
+    
     let filtered = allNotes.filter(n => {
         const title = (n.note_title || "").toLowerCase();
+        const anime = (n.anime_title || "").toLowerCase();
+        const tags = (n.tags || []);
+        
+        // 除外ワードチェック
+        const excludeWords = ['うそ探偵', 'YOSOHACHI', '電車', '募集', '副業'];
+        const isIrrelevant = excludeWords.some(word => 
+            title.includes(word.toLowerCase()) || 
+            tags.some(tag => tag.includes(word))
+        );
+
+        return !isIrrelevant && 
+               (title.includes(searchTerm) || anime.includes(searchTerm)) && 
+               (!selectedAnime || n.anime_title === selectedAnime);
+    });
+
         const anime = (n.anime_title || "").toLowerCase();
         const isIrrelevant = (n.tags || []).includes("うそ探偵トマント") || title.includes("YOSOHACHI"); return !isIrrelevant && (title.includes(searchTerm) || anime.includes(searchTerm)) && 
                (!selectedAnime || n.anime_title === selectedAnime);
