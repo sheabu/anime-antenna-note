@@ -30,7 +30,7 @@ function displayNotes() {
     let filtered = allNotes.filter(n => {
         const title = (n.note_title || "").toLowerCase();
         const anime = (n.anime_title || "").toLowerCase();
-        return (title.includes(searchTerm) || anime.includes(searchTerm)) && 
+        const isIrrelevant = (n.tags || []).includes("うそ探偵トマント") || title.includes("YOSOHACHI"); return !isIrrelevant && (title.includes(searchTerm) || anime.includes(searchTerm)) && 
                (!selectedAnime || n.anime_title === selectedAnime);
     });
 

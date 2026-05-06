@@ -171,3 +171,29 @@ body {
     0% { top: 0; }
     100% { top: -100%; }
 }
+.official-ticker-container {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+    background: #fff;
+}
+.official-ticker-content {
+    position: absolute;
+    width: 100%;
+    animation: vertical-ticker 20s linear infinite;
+}
+.official-ticker-content a {
+    display: block;
+    padding: 12px;
+    color: #3d5afe;
+    text-decoration: none;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.95rem;
+    transition: background 0.2s;
+}
+.official-ticker-content a:hover { background: #f5f7ff; }
+
+@keyframes vertical-ticker {
+    0% { top: 0; }
+    100% { top: -100%; }
+}
