@@ -2,9 +2,12 @@ import json
 import random
 import time
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 import requests
+from bs4 import BeautifulSoup
+
+DEFAULT_THUMBNAIL = 'https://via.placeholder.com/140x80?text=Anime'
 
 
 def save_notes(notes):
@@ -19,6 +22,44 @@ def extract_note_key(url):
         key = path.rstrip('/').split('/')[-1]
         if key.startswith('n') and len(key) >= 8:
             return key
+    except Exception:
+        return ''
+    return ''
+
+
+def normalize_image_url(image_url, base_url):
+    image_url = (image_url or '').strip()
+    if not image_url:
+        return ''
+    return urljoin(base_url, image_url)
+
+
+def scrape_thumbnail_from_html(session, note_url):
+    try:
+        resp = session.get(note_url, timeout=20, headers={'User-Agent': 'Mozilla/5.0', 'Referer': note_url})
+        if resp.status_code != 200:
+            return ''
+        soup = BeautifulSoup(resp.text, 'html.parser')
+
+        # 1) og:image を最優先
+        og = soup.find('meta', attrs={'property': 'og:image'}) or soup.find('meta', attrs={'name': 'og:image'})
+        if og and og.get('content'):
+            return normalize_image_url(og.get('content'), note_url)
+
+        # 2) 本文の1枚目画像（遅延読み込み属性を考慮）
+        candidates = soup.select('article img, main img, .note-body img, .o-noteContentText img, img')
+        for img in candidates:
+            src = (
+                img.get('data-src')
+                or img.get('data-original')
+                or img.get('data-lazy-src')
+                or img.get('src')
+            )
+            if not src and img.get('srcset'):
+                src = img.get('srcset').split(',')[0].strip().split(' ')[0]
+            normalized = normalize_image_url(src, note_url)
+            if normalized:
+                return normalized
     except Exception:
         return ''
     return ''
@@ -47,11 +88,15 @@ def fetch_note_detail(session, note_url):
             elif isinstance(eyecatch, str):
                 thumbnail = eyecatch
 
+            thumbnail = normalize_image_url(thumbnail, note_url)
+            if not thumbnail:
+                thumbnail = scrape_thumbnail_from_html(session, note_url)
+
             return {
                 'like_count': int(payload.get('like_count') or 0),
                 'note_title': (payload.get('name') or '').strip(),
                 'posted_at': payload.get('publish_at') or '',
-                'thumbnail': thumbnail,
+                'thumbnail': thumbnail or DEFAULT_THUMBNAIL,
             }
         if resp.status_code in (429, 503):
             time.sleep((attempt + 1) * 2)
@@ -64,8 +109,13 @@ def retry_missing_details():
     with open('notes_data.json', 'r', encoding='utf-8') as f:
         notes = json.load(f)
     
-    # ハートが0、またはタイトルが取得できていないものを「未取得」として抽出
-    targets = [n for n in notes if n.get('like_count', 0) == 0 or not n.get('note_title')]
+    # スキ数・タイトル・サムネイルの不足を再取得対象にする
+    targets = [
+        n for n in notes
+        if n.get('like_count', 0) == 0
+        or not n.get('note_title')
+        or not str(n.get('thumbnail') or '').strip()
+    ]
     print(f"🚀 スキ数未取得のデータ {len(targets)} 件の再更新を開始します...")
 
     session = requests.Session()

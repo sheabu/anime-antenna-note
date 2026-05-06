@@ -1,5 +1,6 @@
 let notesData = [];
 const RANKING_REFRESH_MS = 5 * 60 * 1000;
+const DEFAULT_THUMBNAIL = 'https://via.placeholder.com/140x80?text=Anime';
 
 function isGenericTitle(value) {
     return /^\s*note\s*article\s*$/i.test(String(value || ''));
@@ -15,12 +16,17 @@ function normalizeNote(note) {
     const displayWork = note.work ?? note.anime_title ?? '未分類';
     const baseLikes = Number(note.likes ?? note.like_count ?? 0) || 0;
 
+    const candidateImage = note.image ?? note.thumbnail ?? '';
+    const safeImage = typeof candidateImage === 'string' && /^https?:\/\//.test(candidateImage)
+        ? candidateImage
+        : DEFAULT_THUMBNAIL;
+
     return {
         work: displayWork,
         title: displayTitle,
         likes: baseLikes,
         date: note.date ?? note.posted_at ?? note.updated_at ?? '',
-        image: note.image ?? note.thumbnail ?? '',
+        image: safeImage,
         url: safeUrl
     };
 }
@@ -137,7 +143,7 @@ function render() {
     document.getElementById('note-list').innerHTML = filtered.map((note) => {
         return `
         <div class="note-card">
-            <img src="${note.image || 'https://via.placeholder.com/140x80?text=Anime'}" alt="">
+            <img src="${note.image || DEFAULT_THUMBNAIL}" alt="">
             <div class="note-main">
                 <span style="color:#ff4e00; font-size:11px; font-weight:bold;">${note.work}</span>
                 <h3 style="margin:5px 0; font-size:16px;">
