@@ -1,20 +1,21 @@
-body { background: #f8f9fa; background-image: radial-gradient(#d1d5db 1px, transparent 1px); background-size: 20px 20px; margin: 0; font-family: sans-serif; }
-.container { display: flex; max-width: 1000px; margin: 30px auto; gap: 20px; padding: 0 15px; }
-main { flex: 1; }
+body { background: #f4f7f9; background-image: radial-gradient(#d1d5db 1px, transparent 1px); background-size: 20px 20px; margin: 0; font-family: sans-serif; color: #333; }
+.header-inner { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; padding: 15px; align-items: center; }
+.logo { font-size: 1.2rem; font-weight: bold; color: #ff4e00; }
+#search-input { padding: 8px 16px; border-radius: 20px; border: 1px solid #ddd; outline: none; }
 
-.note-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; gap: 15px; text-decoration: none; color: inherit; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+.container { display: flex; max-width: 1000px; margin: 20px auto; gap: 20px; padding: 0 15px; }
+main { flex: 1; }
+.sidebar { width: 300px; flex-shrink: 0; }
+
+.note-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 12px; display: flex; gap: 15px; text-decoration: none; color: inherit; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: 0.2s; }
+.note-card:hover { transform: translateX(5px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 .note-card img { width: 120px; height: 68px; object-fit: cover; border-radius: 6px; }
 
-.sidebar { width: 280px; }
-.sidebar-panel { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+.sidebar-panel { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+select { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd; margin-top: 5px; }
 
-/* 山手線広告風のスクロール演出 */
-.x-panel { padding: 0; overflow: hidden; border: 1px solid #eee; }
-.x-header { background: #ff4e00; color: white; padding: 8px; font-weight: bold; font-size: 11px; text-align: center; }
-.x-window { height: 400px; overflow-y: auto; }
-.x-window::-webkit-scrollbar { width: 0; }
-
-header { background: white; border-bottom: 1px solid #eee; padding: 10px 0; }
-.header-inner { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; }
-.logo { font-size: 18px; color: #ff4e00; }
-#search-input { padding: 8px; border-radius: 20px; border: 1px solid #ddd; width: 200px; }
+/* 山手線広告風：スクロールバーを隠して自動で流れる窓 */
+.x-ad-space { padding: 0; overflow: hidden; border: 1px solid #eee; }
+.x-ad-header { background: #ff4e00; color: white; padding: 6px; font-size: 11px; font-weight: bold; text-align: center; }
+.x-ad-window { height: 450px; overflow-y: auto; scroll-behavior: smooth; }
+.x-ad-window::-webkit-scrollbar { width: 0; }
