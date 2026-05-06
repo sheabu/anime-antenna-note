@@ -199,3 +199,42 @@ body {
     .container { flex-direction: column; }
     .sidebar { order: -1; }
 }
+
+/* ソートタブのスタイル */
+.sort-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: white;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.tab-btn {
+    padding: 8px 20px;
+    border: none;
+    background: #f0f2f5;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #666;
+    transition: 0.2s;
+}
+
+.tab-btn.active {
+    background: #0066ff;
+    color: white;
+}
+
+.tab-btn:hover {
+    background: #e0e4e9;
+}
+
+/* X埋め込みエリア */
+.x-embed-container {
+    padding: 10px;
+    background: #fff;
+    max-height: 600px;
+    overflow-y: auto;
+}

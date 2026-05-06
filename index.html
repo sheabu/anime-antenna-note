@@ -1,38 +1,39 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>あにnoteアンテナ</title>
     <link rel="stylesheet" href="style.css">
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </head>
 <body>
-    <header style="background:#333; color:#fff; padding:10px 0; text-align:center;">
+    <header>
         <h1>あにnoteアンテナ</h1>
     </header>
-    
-    <div class="container">
-        <div id="note-list">
-            <p>読み込み中...</p>
-        </div>
 
-        <div class="sidebar">
-            <div style="background:#000; color:#fff; padding:10px; border-radius:8px 8px 0 0; font-weight:bold;">📢 公式最新情報</div>
-            <div class="official-ticker-container">
-                <div class="official-ticker-content">
-                    <a href="#">🎬 進撃の巨人 公式X</a>
-                    <a href="#">⚔️ 鬼滅の刃 公式X</a>
-                    <a href="#">🧿 呪術廻戦 公式X</a>
-                    <a href="#">🥜 SPY×FAMILY 公式X</a>
-                    <a href="#">🌟 推しの子 公式X</a>
-                    <a href="#">🎬 進撃の巨人 公式X</a>
-                    <a href="#">⚔️ 鬼滅の刃 公式X</a>
-                    <a href="#">🧿 呪術廻戦 公式X</a>
-                    <a href="#">🥜 SPY×FAMILY 公式X</a>
+    <div class="container">
+        <main id="main-content">
+            <nav class="sort-tabs">
+                <button class="tab-btn active" onclick="sortNotes('new')">最新</button>
+                <button class="tab-btn" onclick="sortNotes('popular')">人気</button>
+                <button class="tab-btn" onclick="sortNotes('work')">作品別</button>
+            </nav>
+            
+            <div id="note-list">
+                </div>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-panel">
+                <div class="panel-header">📢 公式X最新情報</div>
+                <div class="x-embed-container">
+                    <a class="twitter-timeline" data-height="600" data-theme="light" href="https://twitter.com/anime_antenna_?ref_src=twsrc%5Etfw">Tweets by anime</a> 
                 </div>
             </div>
-        </div>
+        </aside>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
