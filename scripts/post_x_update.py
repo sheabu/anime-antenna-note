@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
+import tweepy
+
 
 ROOT = Path(__file__).resolve().parents[1]
 NOTES_PATH = ROOT / "notes_data.json"
@@ -125,24 +127,24 @@ def build_post_text(rankings: list[tuple[str, int]], featured: list[Note]) -> st
 
 
 def create_client():
-    import tweepy
-
-    api_key = os.environ.get("X_API_KEY") or os.environ.get("X_CONSUMER_KEY")
-    api_secret = (
-        os.environ.get("X_API_SECRET")
-        or os.environ.get("X_API_SECRET_KEY")
-        or os.environ.get("X_CONSUMER_SECRET")
-    )
-    access_token = os.environ.get("X_ACCESS_TOKEN") or os.environ.get("TWITTER_ACCESS_TOKEN")
-    access_token_secret = (
-        os.environ.get("X_ACCESS_TOKEN_SECRET")
-        or os.environ.get("TWITTER_ACCESS_TOKEN_SECRET")
-    )
-    if not all([api_key, api_secret, access_token, access_token_secret]):
+    required = [
+        "X_API_KEY",
+        "X_API_SECRET",
+        "X_ACCESS_TOKEN",
+        "X_ACCESS_TOKEN_SECRET",
+    ]
+    missing = [name for name in required if not os.environ.get(name)]
+    if missing:
+        print(f"Missing required env vars: {', '.join(missing)}")
         raise RuntimeError(
             "X credentials are missing. Set X_API_KEY, X_API_SECRET, "
             "X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET."
         )
+
+    api_key = os.environ.get("X_API_KEY")
+    api_secret = os.environ.get("X_API_SECRET")
+    access_token = os.environ.get("X_ACCESS_TOKEN")
+    access_token_secret = os.environ.get("X_ACCESS_TOKEN_SECRET")
     return tweepy.Client(
         consumer_key=api_key,
         consumer_secret=api_secret,
@@ -160,19 +162,10 @@ def upload_image_if_enabled(featured: list[Note]):
     if not image_url.startswith("http"):
         return None
 
-    import tweepy
-
-    api_key = os.environ.get("X_API_KEY") or os.environ.get("X_CONSUMER_KEY")
-    api_secret = (
-        os.environ.get("X_API_SECRET")
-        or os.environ.get("X_API_SECRET_KEY")
-        or os.environ.get("X_CONSUMER_SECRET")
-    )
-    access_token = os.environ.get("X_ACCESS_TOKEN") or os.environ.get("TWITTER_ACCESS_TOKEN")
-    access_token_secret = (
-        os.environ.get("X_ACCESS_TOKEN_SECRET")
-        or os.environ.get("TWITTER_ACCESS_TOKEN_SECRET")
-    )
+    api_key = os.environ.get("X_API_KEY")
+    api_secret = os.environ.get("X_API_SECRET")
+    access_token = os.environ.get("X_ACCESS_TOKEN")
+    access_token_secret = os.environ.get("X_ACCESS_TOKEN_SECRET")
     auth = tweepy.OAuth1UserHandler(api_key, api_secret, access_token, access_token_secret)
     v1_api = tweepy.API(auth)
 
