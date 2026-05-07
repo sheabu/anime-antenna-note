@@ -1,5 +1,7 @@
 import json
 import os
+import tempfile
+import urllib.request
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -16,6 +18,7 @@ class Note:
     anime_title: str
     note_title: str
     url: str
+    thumbnail: str
     likes: int
     posted_ts: float
 
@@ -44,6 +47,7 @@ def load_notes(path: Path) -> list[Note]:
         anime = str(row.get("anime_title") or row.get("work") or "").strip()
         title = str(row.get("note_title") or row.get("title") or "").strip()
         url = str(row.get("url") or "").strip()
+        thumbnail = str(row.get("thumbnail") or row.get("image") or "").strip()
         if not anime or not title or not url.startswith("https://"):
             continue
         likes = int(float(row.get("like_count") or row.get("likes") or 0))
@@ -52,6 +56,7 @@ def load_notes(path: Path) -> list[Note]:
                 anime_title=anime,
                 note_title=title,
                 url=url,
+                thumbnail=thumbnail,
                 likes=likes,
                 posted_ts=parse_timestamp(row),
             )
@@ -139,6 +144,30 @@ def create_client():
     )
 
 
+def upload_image_if_enabled(featured: list[Note]):
+    if os.getenv("ENABLE_IMAGE", "false").lower() != "true":
+        return None
+    if not featured:
+        return None
+    image_url = featured[0].thumbnail
+    if not image_url.startswith("http"):
+        return None
+
+    import tweepy
+
+    api_key = os.getenv("X_API_KEY")
+    api_secret = os.getenv("X_API_SECRET")
+    access_token = os.getenv("X_ACCESS_TOKEN")
+    access_token_secret = os.getenv("X_ACCESS_TOKEN_SECRET")
+    auth = tweepy.OAuth1UserHandler(api_key, api_secret, access_token, access_token_secret)
+    v1_api = tweepy.API(auth)
+
+    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=True) as tmp:
+        urllib.request.urlretrieve(image_url, tmp.name)
+        media = v1_api.media_upload(filename=tmp.name)
+        return media.media_id
+
+
 def main() -> None:
     notes = load_notes(NOTES_PATH)
     if not notes:
@@ -151,10 +180,16 @@ def main() -> None:
     if os.getenv("DRY_RUN", "false").lower() == "true":
         print("[DRY_RUN] tweet text:")
         print(text)
+        if os.getenv("ENABLE_IMAGE", "false").lower() == "true" and featured:
+            print(f"[DRY_RUN] image candidate: {featured[0].thumbnail}")
         return
 
     client = create_client()
-    response = client.create_tweet(text=text)
+    media_id = upload_image_if_enabled(featured)
+    if media_id:
+        response = client.create_tweet(text=text, media_ids=[media_id])
+    else:
+        response = client.create_tweet(text=text)
     print(f"Tweet posted: {response.data}")
 
 
