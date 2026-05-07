@@ -127,10 +127,17 @@ def build_post_text(rankings: list[tuple[str, int]], featured: list[Note]) -> st
 def create_client():
     import tweepy
 
-    api_key = os.getenv("X_API_KEY")
-    api_secret = os.getenv("X_API_SECRET")
-    access_token = os.getenv("X_ACCESS_TOKEN")
-    access_token_secret = os.getenv("X_ACCESS_TOKEN_SECRET")
+    api_key = os.environ.get("X_API_KEY") or os.environ.get("X_CONSUMER_KEY")
+    api_secret = (
+        os.environ.get("X_API_SECRET")
+        or os.environ.get("X_API_SECRET_KEY")
+        or os.environ.get("X_CONSUMER_SECRET")
+    )
+    access_token = os.environ.get("X_ACCESS_TOKEN") or os.environ.get("TWITTER_ACCESS_TOKEN")
+    access_token_secret = (
+        os.environ.get("X_ACCESS_TOKEN_SECRET")
+        or os.environ.get("TWITTER_ACCESS_TOKEN_SECRET")
+    )
     if not all([api_key, api_secret, access_token, access_token_secret]):
         raise RuntimeError(
             "X credentials are missing. Set X_API_KEY, X_API_SECRET, "
@@ -145,7 +152,7 @@ def create_client():
 
 
 def upload_image_if_enabled(featured: list[Note]):
-    if os.getenv("ENABLE_IMAGE", "false").lower() != "true":
+    if os.environ.get("ENABLE_IMAGE", "false").lower() != "true":
         return None
     if not featured:
         return None
@@ -155,10 +162,17 @@ def upload_image_if_enabled(featured: list[Note]):
 
     import tweepy
 
-    api_key = os.getenv("X_API_KEY")
-    api_secret = os.getenv("X_API_SECRET")
-    access_token = os.getenv("X_ACCESS_TOKEN")
-    access_token_secret = os.getenv("X_ACCESS_TOKEN_SECRET")
+    api_key = os.environ.get("X_API_KEY") or os.environ.get("X_CONSUMER_KEY")
+    api_secret = (
+        os.environ.get("X_API_SECRET")
+        or os.environ.get("X_API_SECRET_KEY")
+        or os.environ.get("X_CONSUMER_SECRET")
+    )
+    access_token = os.environ.get("X_ACCESS_TOKEN") or os.environ.get("TWITTER_ACCESS_TOKEN")
+    access_token_secret = (
+        os.environ.get("X_ACCESS_TOKEN_SECRET")
+        or os.environ.get("TWITTER_ACCESS_TOKEN_SECRET")
+    )
     auth = tweepy.OAuth1UserHandler(api_key, api_secret, access_token, access_token_secret)
     v1_api = tweepy.API(auth)
 
@@ -177,10 +191,10 @@ def main() -> None:
     featured = pick_featured_notes(notes, top_n=3)
     text = build_post_text(rankings, featured)
 
-    if os.getenv("DRY_RUN", "false").lower() == "true":
+    if os.environ.get("DRY_RUN", "false").lower() == "true":
         print("[DRY_RUN] tweet text:")
         print(text)
-        if os.getenv("ENABLE_IMAGE", "false").lower() == "true" and featured:
+        if os.environ.get("ENABLE_IMAGE", "false").lower() == "true" and featured:
             print(f"[DRY_RUN] image candidate: {featured[0].thumbnail}")
         return
 

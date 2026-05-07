@@ -17,6 +17,14 @@ permissions:
 jobs:
   post-to-x:
     runs-on: ubuntu-latest
+    env:
+      # Primary names
+      X_API_KEY: ${{ secrets.X_API_KEY || secrets.X_CONSUMER_KEY || secrets.X_CONSUMER_API_KEY }}
+      X_API_SECRET: ${{ secrets.X_API_SECRET || secrets.X_API_SECRET_KEY || secrets.X_CONSUMER_SECRET || secrets.X_CONSUMER_SECRET_KEY }}
+      X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN || secrets.TWITTER_ACCESS_TOKEN }}
+      X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET || secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+      ENABLE_IMAGE: "true"
+      DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,12 +43,18 @@ jobs:
       - name: Build latest ranking snapshot
         run: python generate_x_ranking.py
 
+      - name: Validate X credentials in env
+        run: |
+          missing=()
+          [ -n "$X_API_KEY" ] || missing+=("X_API_KEY")
+          [ -n "$X_API_SECRET" ] || missing+=("X_API_SECRET")
+          [ -n "$X_ACCESS_TOKEN" ] || missing+=("X_ACCESS_TOKEN")
+          [ -n "$X_ACCESS_TOKEN_SECRET" ] || missing+=("X_ACCESS_TOKEN_SECRET")
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "Missing required env vars: ${missing[*]}"
+            echo "Check GitHub Secrets names in repository settings."
+            exit 1
+          fi
+
       - name: Post to X
-        env:
-          X_API_KEY: ${{ secrets.X_API_KEY }}
-          X_API_SECRET: ${{ secrets.X_API_SECRET }}
-          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
-          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
-          ENABLE_IMAGE: "true"
-          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
         run: python scripts/post_x_update.py
