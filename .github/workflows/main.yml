@@ -19,10 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # Primary names
-      X_API_KEY: ${{ secrets.X_API_KEY || secrets.X_CONSUMER_KEY || secrets.X_CONSUMER_API_KEY }}
-      X_API_SECRET: ${{ secrets.X_API_SECRET || secrets.X_API_SECRET_KEY || secrets.X_CONSUMER_SECRET || secrets.X_CONSUMER_SECRET_KEY }}
-      X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN || secrets.TWITTER_ACCESS_TOKEN }}
-      X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET || secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+      X_API_KEY: ${{ secrets.X_API_KEY || secrets.X_CONSUMER_KEY || secrets.X_CONSUMER_API_KEY || vars.X_API_KEY || vars.X_CONSUMER_KEY }}
+      X_API_SECRET: ${{ secrets.X_API_SECRET || secrets.X_API_SECRET_KEY || secrets.X_CONSUMER_SECRET || secrets.X_CONSUMER_SECRET_KEY || vars.X_API_SECRET || vars.X_API_SECRET_KEY || vars.X_CONSUMER_SECRET }}
+      X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN || secrets.TWITTER_ACCESS_TOKEN || vars.X_ACCESS_TOKEN || vars.TWITTER_ACCESS_TOKEN }}
+      X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET || secrets.TWITTER_ACCESS_TOKEN_SECRET || vars.X_ACCESS_TOKEN_SECRET || vars.TWITTER_ACCESS_TOKEN_SECRET }}
       ENABLE_IMAGE: "true"
       DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
     steps:
