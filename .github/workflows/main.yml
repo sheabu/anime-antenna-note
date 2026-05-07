@@ -1,0 +1,45 @@
+name: Auto Post X Ranking
+
+on:
+  schedule:
+    # JST 09:00 / 21:00
+    - cron: "0 0,12 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Postせず内容だけ確認"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  post-to-x:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build latest ranking snapshot
+        run: python generate_x_ranking.py
+
+      - name: Post to X
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: python scripts/post_x_update.py
