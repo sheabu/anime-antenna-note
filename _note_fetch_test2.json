@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "last_completed_index": 102,
+    "total_works_scheduled": 193,
+    "updated_at": "2026-05-09T04:05:28.473261+00:00"
+  },
+  "works": [
+    {
+      "index": 102,
+      "anime_title": "ONE PIECE",
+      "scraped_at": "2026-05-09T04:05:28.473235+00:00",
+      "article_count": 0,
+      "articles": []
+    }
+  ]
+}
