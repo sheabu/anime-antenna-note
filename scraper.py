@@ -9,6 +9,10 @@ from article_filters import load_filter_config, title_matches_anime
 
 DATA_FILE = 'notes_data.json'
 ANIME_LIST_FILE = 'anime_list.json'
+MAX_PAGES_PER_ANIME = int(os.getenv("SCRAPE_MAX_PAGES", "3"))
+MAX_NEW_PER_ANIME = int(os.getenv("SCRAPE_MAX_NEW_PER_ANIME", "20"))
+MIN_SLEEP_SEC = float(os.getenv("SCRAPE_SLEEP_MIN", "0.6"))
+MAX_SLEEP_SEC = float(os.getenv("SCRAPE_SLEEP_MAX", "1.5"))
 
 def main():
     print("🥋 最終兵器：超・擬態モードで再挑戦します...")
@@ -40,16 +44,17 @@ def main():
         'Referer': 'https://note.com/search?q=anime&kind=note'
     })
     
-    # 負荷を分散するため、まずは20件ずつに区切って実行
-    for anime in anime_list[:20]:
+    # 全作品を対象に巡回（以前は先頭20件だけだったため最新記事の取りこぼしが起きていた）
+    for anime in anime_list:
         print(f"🕵️ {anime['title']} を探索中...")
         count_per_anime = 0
         
         # 検索キーワードをURL用に安全な形に変換（日本語対策）
         encoded_query = quote(anime['title'])
         
-        for page in range(1, 6):
-            if count_per_anime >= 50: break
+        for page in range(1, MAX_PAGES_PER_ANIME + 1):
+            if count_per_anime >= MAX_NEW_PER_ANIME:
+                break
             
             # ブラウザが実際に叩いている「最新の」エンドポイントを試す
             search_url = f"https://note.com/api/v2/search/combined?q={encoded_query}&kind=note&page={page}"
@@ -71,7 +76,8 @@ def main():
                 if not items: break 
                 
                 for note in items:
-                    if count_per_anime >= 50: break
+                    if count_per_anime >= MAX_NEW_PER_ANIME:
+                        break
                     user = note.get('user') or {}
                     urlname = user.get('urlname')
                     key = note.get('key')
@@ -84,9 +90,8 @@ def main():
                         existing_urls.add(url)
                         count_per_anime += 1
                 
-                # 休憩時間を「3秒〜10秒」と長めに。
-                # 東京のカフェで誰かがのんびり検索している速度をイメージ
-                time.sleep(random.uniform(3, 10))
+                # 全作品巡回するため、待機は短めにして収集幅を優先
+                time.sleep(random.uniform(MIN_SLEEP_SEC, MAX_SLEEP_SEC))
                 
             except Exception as e:
                 print(f"  [Error] {e}")
