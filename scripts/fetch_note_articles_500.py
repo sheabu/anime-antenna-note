@@ -20,6 +20,7 @@ import argparse
 import json
 import os
 import random
+import re
 import sys
 import time
 import traceback
@@ -29,6 +30,11 @@ from typing import Any
 from urllib.parse import quote
 
 import requests
+
+# 検索結果HTML内の記事パス（/urlname/n/nxxxxxxxx）
+_NOTE_PATH_RE = re.compile(r"/([a-zA-Z0-9_.-]+)/n/(n[a-f0-9]+)")
+# note は2024年以降、旧 /api/v2/search/combined が 404 になるため HTML 検索 + v3 詳細API を使用
+DEFAULT_HTML_PAGE_STEP = 20
 
 # プロジェクトルート（scripts/ の親）
 ROOT = Path(__file__).resolve().parents[1]
@@ -70,10 +76,8 @@ def build_session(ua_gen) -> requests.Session:
     s = requests.Session()
     s.headers.update(
         {
-            "Accept": "application/json, text/plain, */*",
             "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
             "Origin": "https://note.com",
-            "Referer": "https://note.com/",
         }
     )
     rotate_user_agent(s, ua_gen)
@@ -121,26 +125,16 @@ def request_with_retry(
     raise RuntimeError("request_with_retry: exceeded retries without response")
 
 
-def extract_note_items(data: dict) -> list[dict]:
-    """combined 検索のレスポンスから notes 配列を取り出す。"""
-    root = data.get("data") or {}
-    notes = root.get("notes")
-    if isinstance(notes, list) and notes:
-        return notes
-    sr = root.get("search_results") or {}
-    notes = sr.get("notes")
-    if isinstance(notes, list):
-        return notes
-    return []
-
-
-def note_url_from_item(note: dict) -> str | None:
-    user = note.get("user") or {}
-    urlname = user.get("urlname")
-    key = note.get("key")
-    if not urlname or not key:
-        return None
-    return f"https://note.com/{urlname}/n/{key}"
+def extract_note_urls_from_search_html(html: str) -> list[str]:
+    """検索結果HTMLから note 記事URLを抽出（順序維持・重複除去）。"""
+    seen: set[str] = set()
+    out: list[str] = []
+    for m in _NOTE_PATH_RE.finditer(html):
+        url = f"https://note.com/{m.group(1)}/n/{m.group(2)}"
+        if url not in seen:
+            seen.add(url)
+            out.append(url)
+    return out
 
 
 def extract_note_key(url: str) -> str:
@@ -157,7 +151,10 @@ def fetch_note_detail(
     if not key.startswith("n") or len(key) < 8:
         return None
     api_url = f"https://note.com/api/v3/notes/{key}"
-    headers = {"Referer": note_url}
+    headers = {
+        "Referer": note_url,
+        "Accept": "application/json, text/plain, */*",
+    }
     resp = request_with_retry(session, ua_gen, "GET", api_url, headers=headers, timeout=25)
     if resp.status_code != 200:
         return None
@@ -180,52 +177,51 @@ def fetch_note_detail(
     }
 
 
-def collect_search_candidates(
+def collect_candidate_urls_from_popular_search(
     session: requests.Session,
     ua_gen,
     anime_title: str,
     max_pages: int,
-) -> list[dict]:
-    """検索APIで複数ページ取得し、ノート辞書のリストを返す（重複キーは後で除外）。"""
+    page_step: int,
+) -> list[str]:
+    """
+    人気順（sort=popular）の検索HTMLをページングし、記事URL候補を集める。
+    start は 0, page_step, 2*page_step, ...
+    """
     encoded = quote(anime_title)
-    collected: list[dict] = []
-    for page in range(1, max_pages + 1):
+    collected: list[str] = []
+    seen: set[str] = set()
+    for page_i in range(max_pages):
+        start = page_i * page_step
         search_url = (
-            f"https://note.com/api/v2/search/combined"
-            f"?q={encoded}&kind=note&page={page}"
+            f"https://note.com/search?q={encoded}&context=note&sort=popular&start={start}"
         )
-        resp = request_with_retry(session, ua_gen, "GET", search_url, timeout=20)
+        html_headers = {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Referer": "https://note.com/",
+        }
+        resp = request_with_retry(
+            session, ua_gen, "GET", search_url, timeout=30, headers=html_headers
+        )
         if resp.status_code != 200:
-            log(f"    search page {page}: HTTP {resp.status_code} -> stop pages")
+            log(f"    search HTML start={start}: HTTP {resp.status_code} -> stop")
             break
-        try:
-            data = resp.json()
-        except json.JSONDecodeError:
+        urls = extract_note_urls_from_search_html(resp.text)
+        new_urls = [u for u in urls if u not in seen]
+        if not new_urls:
+            log(f"    search HTML start={start}: 新規URLなし -> stop")
             break
-        items = extract_note_items(data)
-        if not items:
-            break
-        collected.extend(items)
+        for u in new_urls:
+            seen.add(u)
+            collected.append(u)
         time.sleep(random.uniform(3.0, 7.0))
     return collected
-
-
-def dedupe_by_url(items: list[dict]) -> list[dict]:
-    seen: set[str] = set()
-    out: list[dict] = []
-    for n in items:
-        u = note_url_from_item(n)
-        if not u or u in seen:
-            continue
-        seen.add(u)
-        out.append(n)
-    return out
 
 
 def enrich_and_pick_top(
     session: requests.Session,
     ua_gen,
-    candidates: list[dict],
+    candidate_urls: list[str],
     target_count: int,
     detail_delay_min: float,
     detail_delay_max: float,
@@ -234,17 +230,14 @@ def enrich_and_pick_top(
     各候補に対し v3 で詳細を取得し、like_count でソートして上位 target_count 件。
     """
     details: list[dict[str, Any]] = []
-    for i, raw in enumerate(candidates):
-        url = note_url_from_item(raw)
-        if not url:
-            continue
+    for i, url in enumerate(candidate_urls):
         try:
             d = fetch_note_detail(session, ua_gen, url)
             if d and d.get("title"):
                 details.append(d)
         except Exception as e:
             log(f"    [detail error] {url} -> {e!r}")
-        if i + 1 < len(candidates):
+        if i + 1 < len(candidate_urls):
             time.sleep(random.uniform(detail_delay_min, detail_delay_max))
     details.sort(key=lambda x: int(x.get("like_count") or 0), reverse=True)
     return details[:target_count]
@@ -316,7 +309,13 @@ def parse_args() -> argparse.Namespace:
         "--search-pages",
         type=int,
         default=12,
-        help="Max search API pages per anime (each page ~ several notes); increase if fewer than per-work hits",
+        help="Max search HTML pages per anime (each page uses start= i * page-step)",
+    )
+    p.add_argument(
+        "--page-step",
+        type=int,
+        default=DEFAULT_HTML_PAGE_STEP,
+        help="note検索の start オフセット刻み幅（通常20）",
     )
     return p.parse_args()
 
@@ -354,7 +353,10 @@ def main() -> None:
     log(f"Titles in list: {total_titles}")
     log(f"Processing indices [{start}, {end})  (= {end - start} works)")
     log(f"Target per work: {args.per_work} articles (by like_count after detail fetch)")
-    log(f"Sleep: 10–25s per work start, 3–7s per search page, 2–5s between detail API calls")
+    log(
+        "Sleep: 10–25s per work start, 3–7s per search page (HTML), "
+        "between-detail from FETCH_DETAIL_SLEEP_MIN/MAX"
+    )
     log("")
 
     detail_min = float(os.environ.get("FETCH_DETAIL_SLEEP_MIN", "2"))
@@ -374,28 +376,31 @@ def main() -> None:
         try:
             time.sleep(random.uniform(10.0, 25.0))
 
-            raw_candidates = collect_search_candidates(
-                session, ua_gen, title, max_pages=args.search_pages
+            raw_urls = collect_candidate_urls_from_popular_search(
+                session,
+                ua_gen,
+                title,
+                max_pages=args.search_pages,
+                page_step=args.page_step,
             )
-            candidates = dedupe_by_url(raw_candidates)
 
-            if not candidates:
-                log(f"  -> 検索結果なし。空で保存します。")
+            if not raw_urls:
+                log("  -> 検索結果なし（HTML）。空で保存します。")
                 upsert_work(data, idx, title, [])
                 save_results_atomic(out_path, data)
                 continue
 
             # 人気順確定のため多めに詳細取得するが、件数は上限で抑える（全件だと極端に遅い）
             need_fetch = min(
-                len(candidates),
+                len(raw_urls),
                 max(args.per_work * 2, args.per_work + 15),
             )
-            candidates = candidates[:need_fetch]
+            candidate_urls = raw_urls[:need_fetch]
 
             articles = enrich_and_pick_top(
                 session,
                 ua_gen,
-                candidates,
+                candidate_urls,
                 target_count=args.per_work,
                 detail_delay_min=detail_min,
                 detail_delay_max=detail_max,
