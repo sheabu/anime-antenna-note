@@ -1,6 +1,9 @@
 let notesData = [];
 const RANKING_REFRESH_MS = 5 * 60 * 1000;
 const DEFAULT_THUMBNAIL = 'https://via.placeholder.com/140x80?text=Anime';
+const MOBILE_MAX_WIDTH = 900;
+const MOBILE_PER_PAGE = 10;
+let currentPage = 1;
 
 function isGenericTitle(value) {
     return /^\s*note\s*article\s*$/i.test(String(value || ''));
@@ -51,9 +54,19 @@ async function startApp() {
         });
 
         // 操作があったら即座に再描画
-        document.getElementById('work-filter').onchange = render;
-        document.getElementById('sort-order').onchange = render;
-        document.getElementById('search-input').oninput = render;
+        document.getElementById('work-filter').onchange = () => {
+            currentPage = 1;
+            render();
+        };
+        document.getElementById('sort-order').onchange = () => {
+            currentPage = 1;
+            render();
+        };
+        document.getElementById('search-input').oninput = () => {
+            currentPage = 1;
+            render();
+        };
+        window.addEventListener('resize', render);
 
         render();
         initializeXWidgets();
@@ -142,7 +155,14 @@ function render() {
         new Date(b.date) - new Date(a.date) : (b.likes || 0) - (a.likes || 0)
     );
 
-    document.getElementById('note-list').innerHTML = filtered.map((note) => {
+    const isMobile = window.innerWidth <= MOBILE_MAX_WIDTH;
+    const perPage = isMobile ? MOBILE_PER_PAGE : filtered.length || 1;
+    const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+    currentPage = Math.min(currentPage, totalPages);
+    const start = (currentPage - 1) * perPage;
+    const pageItems = filtered.slice(start, start + perPage);
+
+    document.getElementById('note-list').innerHTML = pageItems.map((note) => {
         return `
         <div class="note-card">
             <img src="${note.image}" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${DEFAULT_THUMBNAIL}'">
@@ -158,6 +178,47 @@ function render() {
         </div>
     `;
     }).join('');
+
+    renderPagination(isMobile, totalPages);
+}
+
+function renderPagination(isMobile, totalPages) {
+    const pagination = document.getElementById('pagination');
+    if (!pagination) return;
+
+    if (!isMobile || totalPages <= 1) {
+        pagination.classList.add('hidden');
+        pagination.innerHTML = '';
+        return;
+    }
+
+    pagination.classList.remove('hidden');
+    pagination.innerHTML = `
+        <button id="page-prev" ${currentPage <= 1 ? 'disabled' : ''}>前へ</button>
+        <span class="page-indicator">${currentPage} / ${totalPages}</span>
+        <button id="page-next" ${currentPage >= totalPages ? 'disabled' : ''}>次へ</button>
+    `;
+
+    const prev = document.getElementById('page-prev');
+    const next = document.getElementById('page-next');
+    if (prev) {
+        prev.onclick = () => {
+            if (currentPage > 1) {
+                currentPage -= 1;
+                render();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+    }
+    if (next) {
+        next.onclick = () => {
+            if (currentPage < totalPages) {
+                currentPage += 1;
+                render();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+    }
 }
 
 window.onload = startApp;
