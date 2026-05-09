@@ -1,6 +1,5 @@
 import json
 import os
-from collections import defaultdict
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
@@ -10,7 +9,8 @@ import requests
 
 ROOT = Path(__file__).resolve().parents[1]
 NOTES_PATH = ROOT / "notes_data.json"
-MAX_X_CHARS = 220
+MAX_X_CHARS = 140
+ESSENTIAL_HASHTAGS = "#アニメ #note"
 
 
 def parse_timestamp(note: dict) -> float:
@@ -51,80 +51,113 @@ def load_notes(path: Path) -> list[dict]:
     return notes
 
 
-def build_rankings(notes: list[dict], top_n: int = 3) -> list[str]:
-    scores: defaultdict[str, float] = defaultdict(float)
-    now_ts = datetime.now(timezone.utc).timestamp()
-    for note in notes:
-        tag = f"#{note['anime_title'].replace(' ', '')}"
-        age_days = max((now_ts - note["posted_ts"]) / 86400.0, 0) if note["posted_ts"] else 30.0
-        recency_boost = max(1.0, 30.0 - age_days)
-        scores[tag] += note["likes"] * 2.0 + recency_boost
-    ranked = sorted(scores.items(), key=lambda item: item[1], reverse=True)
-    return [tag for tag, _ in ranked[:top_n]]
+def pick_newest_notes(notes: list[dict], top_n: int = 3) -> list[dict]:
+    """posted_at が新しい順。同一時刻は URL で安定ソート。"""
+    return sorted(
+        notes,
+        key=lambda n: (n["posted_ts"], n["url"]),
+        reverse=True,
+    )[:top_n]
 
 
-def pick_top_notes(notes: list[dict], top_n: int = 3) -> list[dict]:
-    # 人気順（いいね数優先）+ 同率は新しい記事を優先
-    sorted_notes = sorted(notes, key=lambda n: (n["likes"], n["posted_ts"]), reverse=True)
-    return sorted_notes[:top_n]
+def truncate_dots(text: str, max_len: int) -> str:
+    """長すぎる場合は末尾を ... で省略（X本文の文字数に合わせる）。"""
+    t = text.strip()
+    if max_len <= 0:
+        return ""
+    if len(t) <= max_len:
+        return t
+    if max_len <= 3:
+        return "." * min(max_len, 3)
+    return t[: max_len - 3] + "..."
 
 
-def short_title_hook(title: str, max_len: int = 36) -> str:
+def normalize_hook_title(title: str) -> str:
     text = title.replace("【", "").replace("】", " ").replace("『", "").replace("』", "").strip()
     text = " ".join(text.split())
-    text = text.strip("\"'")
-    if len(text) <= max_len:
-        return text
-    return text[: max_len - 1] + "…"
-
-
-def build_teaser(top_note: dict) -> str:
-    hook = short_title_hook(top_note["title"], max_len=32)
-    return f"続きが気になる『{hook}』"
+    return text.strip("\"'")
 
 
 def build_x_draft(notes: list[dict]) -> str:
-    tags = build_rankings(notes, top_n=2)
-    top_notes = pick_top_notes(notes, top_n=3)
-    top_note = top_notes[0]
-    featured_url = top_note["url"]
-    date_label = datetime.now().strftime("%m/%d")
-    tag_text = " ".join(tags) if tags else f"#{top_note['anime_title'].replace(' ', '')}"
-    teaser = build_teaser(top_note)
+    """
+    新着1件ベース。本文 + 固定ハッシュタグ2つで MAX_X_CHARS 以内。
+    """
+    if not notes:
+        return ""
+    featured = pick_newest_notes(notes, top_n=1)[0]
 
-    base = (
-        f"{date_label} 人気note速報\n"
-        f"❤️{top_note['likes']} / {top_note['anime_title']}\n"
-        f"{teaser}\n"
-        f"{featured_url}\n"
-        f"#アニメ #note #考察 {tag_text}"
-    )
-    if len(base) <= MAX_X_CHARS:
-        return base
+    mmdd = datetime.now().strftime("%m/%d")
+    line1 = f"{mmdd} 新着note"
+    url = featured["url"]
+    anime = featured["anime_title"].strip()
+    hook_src = normalize_hook_title(featured["title"])
+    footer = f"\n{ESSENTIAL_HASHTAGS}"
 
-    compact = (
-        f"{date_label} 注目note\n"
-        f"{top_note['anime_title']} ❤️{top_note['likes']}\n"
-        f"{featured_url}\n"
-        f"#アニメ #note #考察"
-    )
-    if len(compact) <= MAX_X_CHARS:
-        return compact
+    def render(anime_s: str, hook_s: str | None) -> str:
+        lines = [line1, anime_s]
+        if hook_s:
+            lines.append(f"続きが気になる『{hook_s}』")
+        lines.append(url)
+        return "\n".join(lines) + footer
 
-    minimal = f"{date_label} 注目note {featured_url}"
-    return minimal[:MAX_X_CHARS]
+    # アニメ名・フックを短くしながら 140 文字に収める
+    max_anime = len(anime)
+    while max_anime >= 1:
+        a = truncate_dots(anime, max_anime)
+        # フックなし
+        body0 = render(a, None)
+        if len(body0) <= MAX_X_CHARS:
+            # 余裕があればフックをできるだけ長く
+            best = body0
+            for hlen in range(len(hook_src), 0, -1):
+                h = truncate_dots(hook_src, hlen)
+                cand = render(a, h)
+                if len(cand) <= MAX_X_CHARS:
+                    best = cand
+                    break
+            return best
+
+        for hlen in range(len(hook_src), 0, -1):
+            h = truncate_dots(hook_src, hlen)
+            cand = render(a, h)
+            if len(cand) <= MAX_X_CHARS:
+                return cand
+
+        max_anime -= 1
+
+    # 最終手段（極端に長い URL 等）
+    minimal = f"{line1}\n{url}{footer}"
+    if len(minimal) <= MAX_X_CHARS:
+        return minimal
+    return truncate_dots(minimal, MAX_X_CHARS)
+
+
+def format_posted_hint(note: dict) -> str:
+    ts = note["posted_ts"]
+    if not ts:
+        return "投稿日時不明"
+    try:
+        dt = datetime.fromtimestamp(ts, tz=timezone.utc).astimezone()
+        return dt.strftime("%m/%d %H:%M")
+    except Exception:
+        return "投稿日時不明"
 
 
 def build_discord_report(notes: list[dict], draft: str) -> str:
-    top_notes = pick_top_notes(notes, top_n=3)
-    lines = ["X投稿下書き（自動生成）", f"文字数: {len(draft)}", ""]
-    lines.append("▼人気記事TOP3（いいね順）")
-    for idx, note in enumerate(top_notes, start=1):
-        hook = short_title_hook(note["title"], max_len=46)
-        lines.append(f"{idx}. ❤️{note['likes']} {note['anime_title']} / {hook}")
-    lines.append("")
-    lines.append("▼投稿文")
-    lines.append(draft)
+    """▼投稿文を最優先。新着1件の短いコンテキストのみ（TOP3一覧は出さない）。"""
+    featured = pick_newest_notes(notes, top_n=1)[0]
+    one_line = (
+        f"{featured['anime_title']} / "
+        f"{truncate_dots(normalize_hook_title(featured['title']), 42)}"
+    )
+    lines = [
+        "X投稿下書き（自動生成・新着順）",
+        f"文字数: {len(draft)} / {MAX_X_CHARS}",
+        f"新着1件: {one_line}（{format_posted_hint(featured)}）",
+        "",
+        "▼投稿文",
+        draft,
+    ]
     return "\n".join(lines)
 
 
@@ -147,6 +180,9 @@ def main() -> None:
         raise RuntimeError("notes_data.json does not contain valid records.")
 
     draft = build_x_draft(notes)
+    if len(draft) > MAX_X_CHARS:
+        raise RuntimeError(f"Draft exceeds {MAX_X_CHARS} chars: {len(draft)}")
+
     report = build_discord_report(notes, draft)
     if dry_run:
         print("[DRY_RUN] Generated X draft:")
