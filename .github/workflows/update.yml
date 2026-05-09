@@ -2,8 +2,8 @@ name: Update Anime Notes DB
 
 on:
   schedule:
-    # 毎日 21:00 UTC = JST 翌朝 06:00
-    - cron: "0 21 * * *"
+    # 10分ごと（GitHub Actionsの時間はUTC）
+    - cron: "*/10 * * * *"
   workflow_dispatch:   # 手動実行も可能
 
 permissions:
@@ -12,10 +12,16 @@ permissions:
 jobs:
   scrape-and-update:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 25
     concurrency:
       group: update-anime-notes-db
-      cancel-in-progress: false
+      cancel-in-progress: true
+    env:
+      # 10分周期でも詰まらないよう、1回あたりの収集量を軽くする
+      SCRAPE_MAX_PAGES: "1"
+      SCRAPE_MAX_NEW_PER_ANIME: "4"
+      SCRAPE_SLEEP_MIN: "0.2"
+      SCRAPE_SLEEP_MAX: "0.6"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
