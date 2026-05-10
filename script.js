@@ -1,6 +1,7 @@
 let notesData = [];
 const RANKING_REFRESH_MS = 5 * 60 * 1000;
-const DEFAULT_THUMBNAIL = 'https://via.placeholder.com/140x80?text=Anime';
+// 同一リポジトリ内SVG（外部プレースホルダはブロックされやすく、onerror で無限ループしやすい）
+const DEFAULT_THUMBNAIL = './note-placeholder.svg';
 const MOBILE_MAX_WIDTH = 900;
 const MOBILE_PER_PAGE = 10;
 let currentPage = 1;
@@ -21,10 +22,15 @@ function normalizeNote(note) {
 
     let candidateImage = String(note.image ?? note.thumbnail ?? '').trim();
     if (candidateImage.startsWith('//')) candidateImage = 'https:' + candidateImage;
+    const isRelativeAsset =
+        candidateImage.startsWith('./') ||
+        candidateImage.startsWith('/') ||
+        candidateImage.endsWith('.svg');
+    const isHttp = /^https?:\/\//i.test(candidateImage);
+    const isDeadPlaceholder =
+        /via\.placeholder\.com|placehold\.it|placekitten|dummyimage\.com/i.test(candidateImage);
     const safeImage =
-        typeof candidateImage === 'string' && /^https?:\/\//.test(candidateImage)
-            ? candidateImage
-            : DEFAULT_THUMBNAIL;
+        (isHttp && !isDeadPlaceholder) || isRelativeAsset ? candidateImage : DEFAULT_THUMBNAIL;
 
     return {
         work: displayWork,

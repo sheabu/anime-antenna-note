@@ -20,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_THUMBNAIL = "https://via.placeholder.com/140x80?text=Anime"
+DEFAULT_THUMBNAIL = "./note-placeholder.svg"
 
 
 def load_results(path: Path) -> dict:
