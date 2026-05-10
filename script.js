@@ -24,8 +24,7 @@ function normalizeNote(note) {
     if (candidateImage.startsWith('//')) candidateImage = 'https:' + candidateImage;
     const isRelativeAsset =
         candidateImage.startsWith('./') ||
-        candidateImage.startsWith('/') ||
-        candidateImage.endsWith('.svg');
+        (candidateImage.startsWith('/') && !candidateImage.startsWith('//'));
     const isHttp = /^https?:\/\//i.test(candidateImage);
     const isDeadPlaceholder =
         /via\.placeholder\.com|placehold\.it|placekitten|dummyimage\.com/i.test(candidateImage);
