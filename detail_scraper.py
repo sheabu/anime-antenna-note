@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import re
 import time
@@ -159,7 +160,7 @@ def fetch_note_detail(session, note_url):
             eyecatch = payload.get('eyecatch')
             thumbnail = ''
             if isinstance(eyecatch, dict):
-                thumbnail = eyecatch.get('path') or ''
+                thumbnail = eyecatch.get('path') or eyecatch.get('url') or ''
             elif isinstance(eyecatch, str):
                 thumbnail = eyecatch
 
@@ -183,17 +184,30 @@ def fetch_note_detail(session, note_url):
 
 
 def retry_missing_details():
+    # サムネ補完の1回あたり上限（タイムアウト対策）。環境変数で調整可能
+    thumb_max = int(os.environ.get('THUMB_MAX_PER_RUN', '60'))
+
     with open('notes_data.json', 'r', encoding='utf-8') as f:
         notes = json.load(f)
-    
-    # スキ0・タイトル欠損・サムネ欠損/不正（スキありでもサムネだけ欠けるケースを含む）
-    targets = [
+
+    # サムネ未取得かつスキ/タイトルも未確定: 必ず全件処理（新規追加記事）
+    targets_required = [
         n for n in notes
-        if n.get('like_count', 0) == 0
+        if (n.get('like_count', 0) == 0 and thumbnail_needs_refresh(n))
         or not n.get('note_title')
-        or thumbnail_needs_refresh(n)
     ]
-    print(f"🚀 再取得対象 {len(targets)} 件（スキ/タイトル/サムネの補完）...")
+    required_urls = {n.get('url') for n in targets_required}
+
+    # サムネのみ欠損（スキ・タイトルは取得済み）: スキ数降順で上限件数に絞る
+    targets_thumb = [
+        n for n in notes
+        if thumbnail_needs_refresh(n) and n.get('url') not in required_urls
+    ]
+    targets_thumb.sort(key=lambda n: int(n.get('like_count') or 0), reverse=True)
+    targets_thumb = targets_thumb[:thumb_max]
+
+    targets = targets_required + targets_thumb
+    print(f"再取得対象: 必須={len(targets_required)}件 + サムネ補完={len(targets_thumb)}件（上限{thumb_max}件）")
 
     session = requests.Session()
 
@@ -215,14 +229,15 @@ def retry_missing_details():
                 note['note_title'] = detail['note_title']
             if detail['posted_at']:
                 note['posted_at'] = detail['posted_at']
-            if detail['thumbnail']:
+            # placeholder以外の実URLが取れた場合のみ上書き
+            if detail['thumbnail'] and detail['thumbnail'] != DEFAULT_THUMBNAIL:
                 note['thumbnail'] = detail['thumbnail']
 
             if (i + 1) % 20 == 0:
                 save_notes(notes)
 
-            # レート制御
-            time.sleep(random.uniform(0.05, 0.2))
+            # レート制御（note.com のレート制限を避けるため控えめに）
+            time.sleep(random.uniform(0.3, 0.8))
         except Exception as e:
             print(f"❌ エラー: {note.get('url', '')} ({e})")
             continue

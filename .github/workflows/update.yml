@@ -22,6 +22,7 @@ jobs:
       SCRAPE_MAX_NEW_PER_ANIME: "4"
       SCRAPE_SLEEP_MIN: "0.2"
       SCRAPE_SLEEP_MAX: "0.6"
+      THUMB_MAX_PER_RUN: "60"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
