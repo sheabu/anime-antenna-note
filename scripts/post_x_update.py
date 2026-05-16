@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
+import requests
 import tweepy
 
 
@@ -200,6 +201,21 @@ def upload_image_if_enabled(featured: list[Note]):
                 pass
 
 
+def notify_discord(webhook_url: str, tweet_text: str, tweet_id: str | None = None) -> None:
+    if not webhook_url:
+        return
+    tweet_url = f"https://x.com/i/web/status/{tweet_id}" if tweet_id else ""
+    body_lines = ["**[あにnoteアンテナ] Xに投稿しました**", f"```\n{tweet_text}\n```"]
+    if tweet_url:
+        body_lines.append(tweet_url)
+    try:
+        response = requests.post(webhook_url, json={"content": "\n".join(body_lines)}, timeout=20)
+        response.raise_for_status()
+        print("Discord notification sent.")
+    except Exception as e:
+        print(f"[WARN] Discord notification failed: {e}")
+
+
 def main() -> None:
     notes = load_notes(NOTES_PATH)
     if not notes:
@@ -214,6 +230,9 @@ def main() -> None:
         print(text)
         if os.environ.get("ENABLE_IMAGE", "false").lower() == "true" and featured:
             print(f"[DRY_RUN] image candidate: {featured[0].thumbnail}")
+        discord_url = os.environ.get("DISCORD_WEBHOOK_URL", "").strip()
+        if discord_url:
+            print(f"[DRY_RUN] Discord notification would be sent to webhook.")
         return
 
     client = create_client()
@@ -223,6 +242,10 @@ def main() -> None:
     else:
         response = client.create_tweet(text=text)
     print(f"Tweet posted: {response.data}")
+
+    tweet_id = str(response.data.get("id", "")) if response.data else None
+    discord_url = os.environ.get("DISCORD_WEBHOOK_URL", "").strip()
+    notify_discord(discord_url, text, tweet_id)
 
 
 if __name__ == "__main__":
