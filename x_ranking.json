@@ -1,86 +1,86 @@
 {
-  "updated_at": "2026-05-10 13:06:39",
+  "updated_at": "2026-05-16 14:46:44",
   "source": "notes_data.json",
   "rankings": [
     {
-      "tag": "#DEATHNOTE",
-      "score": 21207
-    },
-    {
       "tag": "#左ききのエレン",
-      "score": 16549
-    },
-    {
-      "tag": "#モンスター",
-      "score": 11200
-    },
-    {
-      "tag": "#リラックマ",
-      "score": 10188
+      "score": 14720
     },
     {
       "tag": "#葬送のフリーレン",
-      "score": 8869
+      "score": 8318
     },
     {
-      "tag": "#ハイキュー!!",
-      "score": 8567
+      "tag": "#モンスター",
+      "score": 8010
     },
     {
       "tag": "#鋼の錬金術師FULLMETALALCHEMIST",
-      "score": 8162
-    },
-    {
-      "tag": "#スティール・ボール・ラン",
-      "score": 7496
-    },
-    {
-      "tag": "#HUNTER×HUNTER",
-      "score": 7449
-    },
-    {
-      "tag": "#冴えない彼女の育てかた",
-      "score": 7225
-    },
-    {
-      "tag": "#ルパン三世",
-      "score": 7207
-    },
-    {
-      "tag": "#ONEPIECE",
-      "score": 7170
+      "score": 7530
     },
     {
       "tag": "#名探偵コナン",
-      "score": 6817
+      "score": 6122
     },
     {
-      "tag": "#SPY×FAMILY",
-      "score": 6734
+      "tag": "#チェンソーマン",
+      "score": 5098
     },
     {
-      "tag": "#鬼滅の刃",
-      "score": 6649
-    },
-    {
-      "tag": "#ジョジョの奇妙な冒険",
-      "score": 6405
-    },
-    {
-      "tag": "#BLEACH",
-      "score": 6334
-    },
-    {
-      "tag": "#氷菓",
-      "score": 6013
-    },
-    {
-      "tag": "#モブサイコ100",
-      "score": 5802
+      "tag": "#ブルーロック",
+      "score": 3830
     },
     {
       "tag": "#進撃の巨人",
-      "score": 5798
+      "score": 3501
+    },
+    {
+      "tag": "#攻殻機動隊",
+      "score": 3362
+    },
+    {
+      "tag": "#ONEPIECE",
+      "score": 3332
+    },
+    {
+      "tag": "#呪術廻戦",
+      "score": 3163
+    },
+    {
+      "tag": "#鬼滅の刃",
+      "score": 3137
+    },
+    {
+      "tag": "#NEEDYGIRLOVERDOSE",
+      "score": 2916
+    },
+    {
+      "tag": "#機動戦士ガンダム",
+      "score": 2903
+    },
+    {
+      "tag": "#北斗の拳",
+      "score": 2806
+    },
+    {
+      "tag": "#あかね噺",
+      "score": 2683
+    },
+    {
+      "tag": "#ルパン三世",
+      "score": 2306
+    },
+    {
+      "tag": "#銀魂",
+      "score": 2143
+    },
+    {
+      "tag": "#黄泉のツガイ",
+      "score": 2025
+    },
+    {
+      "tag": "#BLEACH",
+      "score": 2016
     }
   ]
 }
