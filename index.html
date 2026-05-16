@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>あにnoteアンテナ</title>
+
+    <!-- Google Search Console: GA4連携で自動認証されるため通常は不要。
+         手動認証する場合は下記のcontentを発行された値に置き換える -->
+    <meta name="google-site-verification" content="SEARCH_CONSOLE_TOKEN">
+
+    <!-- Google Analytics 4 -- 「G-XXXXXXXXXX」をGA4の測定IDに置き換える -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
     <link rel="stylesheet" href="style.css">
     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </head>

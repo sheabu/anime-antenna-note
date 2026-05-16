@@ -33,11 +33,18 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      - name: Assemble site (公開に必要なファイルだけを抽出)
+        run: |
+          mkdir -p _site
+          for f in index.html style.css script.js notes_data.json x_ranking.json note-placeholder.svg logo.png; do
+            if [ -e "$f" ]; then cp "$f" _site/; else echo "skip (not found): $f"; fi
+          done
+          touch _site/.nojekyll
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          # 内部スクリプト/DB/PDF等は配信しない
+          path: '_site'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
