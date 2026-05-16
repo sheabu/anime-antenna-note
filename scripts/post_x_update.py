@@ -91,7 +91,8 @@ def pick_featured_notes(notes: list[Note], top_n: int = 3) -> list[Note]:
 
 def build_post_text(rankings: list[tuple[str, int]], featured: list[Note]) -> str:
     lines: list[str] = []
-    lines.append("【あにnoteアンテナ 今日の注目】")
+    now_label = datetime.now(timezone.utc).astimezone().strftime("%-m/%-d %H:%M")
+    lines.append(f"【あにnoteアンテナ 今日の注目 {now_label}】")
     if rankings:
         lines.append("▼人気タグ")
         for i, (tag, score) in enumerate(rankings, start=1):
@@ -111,7 +112,7 @@ def build_post_text(rankings: list[tuple[str, int]], featured: list[Note]) -> st
     while featured and len(text) > 280:
         featured = featured[:-1]
         lines = lines[:]
-        lines = ["【あにnoteアンテナ 今日の注目】"]
+        lines = [f"【あにnoteアンテナ 今日の注目 {now_label}】"]
         if rankings:
             lines.append("▼人気タグ")
             for i, (tag, score) in enumerate(rankings, start=1):
@@ -166,13 +167,37 @@ def upload_image_if_enabled(featured: list[Note]):
     api_secret = os.environ.get("X_API_SECRET")
     access_token = os.environ.get("X_ACCESS_TOKEN")
     access_token_secret = os.environ.get("X_ACCESS_TOKEN_SECRET")
-    auth = tweepy.OAuth1UserHandler(api_key, api_secret, access_token, access_token_secret)
-    v1_api = tweepy.API(auth)
 
-    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=True) as tmp:
-        urllib.request.urlretrieve(image_url, tmp.name)
-        media = v1_api.media_upload(filename=tmp.name)
+    # URLのパス部分から拡張子を判定（クエリパラメータを除去）
+    url_path = image_url.split("?")[0].lower()
+    if url_path.endswith(".png"):
+        suffix = ".png"
+    elif url_path.endswith(".gif"):
+        suffix = ".gif"
+    elif url_path.endswith(".webp"):
+        suffix = ".webp"
+    else:
+        suffix = ".jpg"
+
+    tmp_path = None
+    try:
+        auth = tweepy.OAuth1UserHandler(api_key, api_secret, access_token, access_token_secret)
+        v1_api = tweepy.API(auth)
+
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+            tmp_path = tmp.name
+        urllib.request.urlretrieve(image_url, tmp_path)
+        media = v1_api.media_upload(filename=tmp_path)
         return media.media_id
+    except Exception as e:
+        print(f"[WARN] Image upload skipped: {e}")
+        return None
+    finally:
+        if tmp_path:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
 
 
 def main() -> None:
