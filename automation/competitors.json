@@ -1,0 +1,15 @@
+{
+  "_comment": "巡回対象サイト。name と url は必須。selector(任意)で見出しの CSS セレクタを指定可能。",
+  "sites": [
+    {
+      "name": "アニメ公式ニュース(例)",
+      "url": "https://anime.eiga.com/news/",
+      "selector": "h2, .news-list a"
+    },
+    {
+      "name": "競合まとめサイト(例)",
+      "url": "https://example-anime-matome.com/",
+      "selector": null
+    }
+  ]
+}

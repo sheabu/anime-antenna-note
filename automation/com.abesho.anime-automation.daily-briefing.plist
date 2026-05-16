@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.abesho.anime-automation.daily-briefing</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>__AUTOMATION_DIR__/run.sh</string>
+    <string>daily_briefing.py</string>
+  </array>
+
+  <!-- 毎朝 7:00 に実行。スリープ中に時刻を過ぎた場合は起動時に実行される。 -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key><integer>7</integer>
+    <key>Minute</key><integer>0</integer>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <false/>
+
+  <key>StandardOutPath</key>
+  <string>__AUTOMATION_DIR__/logs/launchd-daily-briefing.out</string>
+  <key>StandardErrorPath</key>
+  <string>__AUTOMATION_DIR__/logs/launchd-daily-briefing.err</string>
+</dict>
+</plist>
