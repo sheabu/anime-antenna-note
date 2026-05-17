@@ -216,6 +216,38 @@ def notify_discord(webhook_url: str, tweet_text: str, tweet_id: str | None = Non
         print(f"[WARN] Discord notification failed: {e}")
 
 
+def _report_x_error(e: "tweepy.TweepyException") -> None:
+    """X API失敗時に原因を特定できるよう、ステータス・APIコード・本文を出力する。"""
+    print("=" * 60)
+    print("[X API ERROR] ツイート投稿に失敗しました")
+    status = None
+    response = getattr(e, "response", None)
+    if response is not None:
+        status = getattr(response, "status_code", None)
+        print(f"  HTTP status : {status}")
+        body = getattr(response, "text", "")
+        if body:
+            print(f"  Response body: {body[:500]}")
+    api_codes = getattr(e, "api_codes", None)
+    api_messages = getattr(e, "api_messages", None)
+    if api_codes:
+        print(f"  API codes   : {api_codes}")
+    if api_messages:
+        print(f"  API messages: {api_messages}")
+    print(f"  Exception   : {type(e).__name__}: {e}")
+
+    hint = {
+        401: "認証情報が無効。4つのトークンを再発行し Secrets を更新してください。",
+        403: "アプリ権限不足の可能性大。X Developer Portal で User authentication settings を "
+             "「Read and Write」にした後、Access Token & Secret を再発行（重要）してください。"
+             " もしくは重複投稿/規約違反の可能性。",
+        429: "レート制限。X API Free プランの月間/日次の投稿上限に達しています。",
+    }.get(status)
+    if hint:
+        print(f"  → 対処: {hint}")
+    print("=" * 60)
+
+
 def main() -> None:
     notes = load_notes(NOTES_PATH)
     if not notes:
@@ -237,10 +269,14 @@ def main() -> None:
 
     client = create_client()
     media_id = upload_image_if_enabled(featured)
-    if media_id:
-        response = client.create_tweet(text=text, media_ids=[media_id])
-    else:
-        response = client.create_tweet(text=text)
+    try:
+        if media_id:
+            response = client.create_tweet(text=text, media_ids=[media_id])
+        else:
+            response = client.create_tweet(text=text)
+    except tweepy.TweepyException as e:
+        _report_x_error(e)
+        raise
     print(f"Tweet posted: {response.data}")
 
     tweet_id = str(response.data.get("id", "")) if response.data else None
