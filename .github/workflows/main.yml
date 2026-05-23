@@ -1,9 +1,12 @@
 name: Auto Post X Ranking
 
 on:
-  schedule:
-    # JST 09:00 / 21:00
-    - cron: "0 0,12 * * *"
+  # 2026-05-24 自動投稿を停止: X(Twitter)の自動投稿は有料(プレミアム)アカウントが必須で、
+  # 無料枠ではAPIが弾かれ post-to-x が連続失敗していたため schedule を無効化。
+  # X プレミアム契約後に下記 schedule のコメントを外せば自動投稿を再開できる。
+  # schedule:
+  #   # JST 09:00 / 21:00
+  #   - cron: "0 0,12 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
