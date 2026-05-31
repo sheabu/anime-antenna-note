@@ -1,14 +1,14 @@
 {
-  "updated_at": "2026-05-31 15:05:26",
+  "updated_at": "2026-05-31 18:58:13",
   "source": "notes_data.json",
   "rankings": [
     {
       "tag": "#左ききのエレン",
-      "score": 15666
+      "score": 15664
     },
     {
       "tag": "#葬送のフリーレン",
-      "score": 8570
+      "score": 8568
     },
     {
       "tag": "#モンスター",
@@ -20,35 +20,35 @@
     },
     {
       "tag": "#名探偵コナン",
-      "score": 6140
+      "score": 6138
     },
     {
       "tag": "#チェンソーマン",
-      "score": 5099
+      "score": 5098
     },
     {
       "tag": "#ブルーロック",
-      "score": 3999
+      "score": 3998
     },
     {
       "tag": "#進撃の巨人",
-      "score": 3503
+      "score": 3502
     },
     {
       "tag": "#ONEPIECE",
-      "score": 3357
+      "score": 3356
     },
     {
       "tag": "#攻殻機動隊",
-      "score": 3308
+      "score": 3306
     },
     {
       "tag": "#NEEDYGIRLOVERDOSE",
-      "score": 3097
+      "score": 3095
     },
     {
       "tag": "#呪術廻戦",
-      "score": 3089
+      "score": 3088
     },
     {
       "tag": "#鬼滅の刃",
@@ -56,31 +56,31 @@
     },
     {
       "tag": "#機動戦士ガンダム",
-      "score": 2895
+      "score": 2894
     },
     {
       "tag": "#北斗の拳",
-      "score": 2736
+      "score": 2735
     },
     {
       "tag": "#あかね噺",
-      "score": 2594
+      "score": 2592
     },
     {
       "tag": "#ルパン三世",
-      "score": 2352
+      "score": 2350
     },
     {
       "tag": "#黄泉のツガイ",
-      "score": 2110
+      "score": 2107
     },
     {
       "tag": "#銀魂",
-      "score": 2087
+      "score": 2086
     },
     {
       "tag": "#BLEACH",
-      "score": 1981
+      "score": 1980
     }
   ]
 }
