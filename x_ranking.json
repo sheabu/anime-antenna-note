@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-11 22:26:13",
+  "updated_at": "2026-06-11 23:59:34",
   "source": "notes_data.json",
   "rankings": [
     {
@@ -32,7 +32,7 @@
     },
     {
       "tag": "#進撃の巨人",
-      "score": 3445
+      "score": 3444
     },
     {
       "tag": "#ONEPIECE",
@@ -64,11 +64,11 @@
     },
     {
       "tag": "#あかね噺",
-      "score": 2515
+      "score": 2514
     },
     {
       "tag": "#ルパン三世",
-      "score": 2282
+      "score": 2281
     },
     {
       "tag": "#銀魂",
@@ -80,7 +80,7 @@
     },
     {
       "tag": "#BLEACH",
-      "score": 1933
+      "score": 1932
     }
   ]
 }
