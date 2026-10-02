@@ -1,9 +1,10 @@
 name: Update Anime Notes DB
 
 on:
-  schedule:
-    # 10分ごと（GitHub Actionsの時間はUTC）
-    - cron: "*/10 * * * *"
+  # 2026-10-02 一時停止（再開は下3行のコメントを外す）
+  # schedule:
+  #   # 10分ごと（GitHub Actionsの時間はUTC）
+  #   - cron: "*/10 * * * *"
   workflow_dispatch:   # 手動実行も可能
 
 permissions:

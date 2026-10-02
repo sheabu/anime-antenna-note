@@ -1,9 +1,10 @@
 name: X Draft Notify
 
 on:
-  schedule:
-    # JST 21:00
-    - cron: "0 12 * * *"
+  # 2026-10-02 一時停止（再開は下3行のコメントを外す）
+  # schedule:
+  #   # JST 21:00
+  #   - cron: "0 12 * * *"
   workflow_dispatch:
 
 permissions:
