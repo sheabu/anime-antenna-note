@@ -1,6 +1,6 @@
 #!/bin/bash
 # 1. フォルダに移動
-cd /Users/abesho/Downloads/note-template-v1/anime-antenna
+cd /Users/abesho/Projects/AnimeSite/anime-antenna
 
 # 2. 蓄積モードでプログラムを実行
 python3 scraper.py
